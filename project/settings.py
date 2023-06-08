@@ -35,7 +35,7 @@ SECRET_KEY = '1187ee740a5e11ef86a3df5e50df7d04dd61539de55bcc7facd6faa3c2ee69e3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://backend-testing-xyz.azurewebsites.net/']
+ALLOWED_HOSTS = []
 
 if 'CODESPACE_NAME' in os.environ:
     CSRF_TRUSTED_ORIGINS = [f'https://{os.getenv("CODESPACE_NAME")}-8000.{os.getenv("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")}']
