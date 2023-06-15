@@ -20,8 +20,6 @@ DJANGO_ENV = os.getenv("DJANGO_ENV", default="dev")
 # choose the envfile
 if DJANGO_ENV == "prod":
     dotenv_file = ".env.prod"
-elif DJANGO_ENV == "test":
-    dotenv_file = ".env.test"
 else:
     dotenv_file = ".env.dev"
 
