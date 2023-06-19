@@ -1,19 +1,42 @@
 import graphene
 from graphene_django import DjangoObjectType
-from .models import alert
+from .models import Alert, AlertInfo
 import datetime
 import requests
 
 
 #This function will return a string that represents a single match query term
 
+#TO DO:
+#Cicile
+#Remove filerted alerts based on id
+#Filter by polygon
+#Compare Expire Date
+#Show alerts based on Language Preference
+#Polygon Overlap
 
-class Alert(DjangoObjectType):
+#Admin:
+#Verify signature
+
+
+
+
+
+class AlertInformationType(DjangoObjectType):
     class Meta:
-        model = alert
+        model = AlertInfo
         fields = ["category", "event", "urgency", "severity", "certainty", "effective", "senderName",
                   "headline", "description", "instruction", "areaDesc", "polygon", "geocode_name", "geocode_value",
-                  "processed_time"]
+                  "alert"]
+
+class AlertType(DjangoObjectType):
+    information = graphene.List(AlertInformationType)
+    class Meta:
+        model = Alert
+        fields = ["hash_id", "processed_time"]
+
+    def resolve_information(self, info):
+        return self.information
 
 
 def generate_filtering_elastic_search_query_string(key, value):
@@ -27,7 +50,7 @@ def generate_filtering_elastic_search_query_string(key, value):
     return search_string
 
 class Query(graphene.ObjectType):
-    filtered_alerts = graphene.List(Alert, filter_string=graphene.Argument(type_=graphene.String))
+    filtered_alerts = graphene.List(AlertType, filter_string=graphene.Argument(type_=graphene.String))
 
     def resolve_filtered_alerts(root, info, filter_string):
         # Define the host of elastic search
@@ -82,7 +105,6 @@ class Query(graphene.ObjectType):
             "size": 10000
         }
 
-        print(query)
         # Set the Content-Type header to application/json
         headers = {
             "Content-Type": "application/json"
@@ -96,86 +118,96 @@ class Query(graphene.ObjectType):
             number_of_hits = data["hits"]["total"]["value"]
             alerts = data["hits"]["hits"]
             filtered_alerts = []
+
+
             # Fetch the information of alerts and encapsulate these information into alert instance
             for alert in alerts:
+                new_alert = AlertType(hash_id = str(datetime.datetime.now().timestamp()))
                 alert_body = alert["_source"]["AlertBody"]
-                if type(alert_body["info"]["category"]) == list:
-                    category = ' '.join(alert_body["info"]["category"])
+                # It is quite confused that the info field can be both list or just an element
+                # Here I convert non-list element into a list.
+                if not isinstance(alert_body["info"], list):
+                    alert_body["info"] = [alert_body["info"]]
+                informations = []
+                for alert_info in alert_body["info"]:
+                    if type(alert_info["category"]) == list:
+                        category = ' '.join(alert_info["category"])
+                    elif alert_info["category"] is not None:
+                        category = alert_info["category"]
+                    else:
+                        category = "None"
 
-                elif alert_body["info"]["category"] is not None:
-                    category = alert_body["info"]["category"]
-                else:
-                    category = "None"
+                    if alert_info["event"] is not None:
+                        event = alert_info["event"]
+                    else:
+                        event = "None"
 
-                if alert_body["info"]["event"] is not None:
-                    event = alert_body["info"]["event"]
-                else:
-                    event = "None"
+                    if alert_info["urgency"] is not None:
+                        urgency = alert_info["urgency"]
+                    else:
+                        urgency = "None"
 
-                if alert_body["info"]["urgency"] is not None:
-                    urgency = alert_body["info"]["urgency"]
-                else:
-                    urgency = "None"
+                    if alert_info["severity"] is not None:
+                        severity = alert_info["severity"]
+                    else:
+                        severity = "None"
 
-                if alert_body["info"]["severity"] is not None:
-                    severity = alert_body["info"]["severity"]
-                else:
-                    severity = "None"
+                    if alert_info["certainty"] is not None:
+                        certainty = alert_info["certainty"]
+                    else:
+                        certainty = "None"
 
-                if alert_body["info"]["certainty"] is not None:
-                    certainty = alert_body["info"]["certainty"]
-                else:
-                    certainty = "None"
+                    effective = "None"
+                    if "effective" in alert_info:
+                        if alert_info["effective"] is not None:
+                            effective = alert_info["effective"]
 
-                effective = "None"
-                if "effective" in alert_body["info"]:
-                    if alert_body["info"]["effective"] is not None:
-                        effective = alert_body["info"]["effective"]
+                    if alert_info["senderName"] is not None:
+                        senderName = alert_info["senderName"]
+                    else:
+                        senderName = "None"
 
-                if alert_body["info"]["senderName"] is not None:
-                    senderName = alert_body["info"]["senderName"]
-                else:
-                    senderName = "None"
+                    if alert_info["headline"] is not None:
+                        headline = alert_info["headline"]
+                    else:
+                        headline = "None"
 
-                if alert_body["info"]["headline"] is not None:
-                    headline = alert_body["info"]["headline"]
-                else:
-                    headline = "None"
+                    if alert_info["description"] is not None:
+                        description = alert_info["description"]
+                    else:
+                        description = "None"
 
-                if alert_body["info"]["description"] is not None:
-                    description = alert_body["info"]["description"]
-                else:
-                    description = "None"
+                    instruction = "None"
+                    if "instruction" in alert_info:
+                        if alert_info["instruction"] is not None:
+                            instruction = alert_info["instruction"]
 
-                instruction = "None"
-                if "instruction" in alert_body["info"]:
-                    if alert_body["info"]["instruction"] is not None:
-                        instruction = alert_body["info"]["instruction"]
+                    areaDesc = "None"
+                    if "areaDesc" in alert_info["area"]:
+                        if alert_info["area"]["areaDesc"] is not None:
+                            areaDesc = alert_info["area"]["areaDesc"]
 
-                areaDesc = "None"
-                if "areaDesc" in alert_body["info"]["area"]:
-                    if alert_body["info"]["area"]["areaDesc"] is not None:
-                        areaDesc = alert_body["info"]["area"]["areaDesc"]
+                    polygon = "None"
+                    if "polygon" in alert_info["area"]:
+                        if alert_info["area"]["polygon"] is not None:
+                            polygon = alert_info["area"]["polygon"]
 
-                polygon = "None"
-                if "polygon" in alert_body["info"]["area"]:
-                    if alert_body["info"]["area"]["polygon"] is not None:
-                        polygon = alert_body["info"]["area"]["polygon"]
+                    geocode_name = "None"
+                    if "geocode_name" in alert_info["area"]:
+                        if alert_info["area"]["geocode_name"] is not None:
+                            geocode_name = alert_info["area"]["geocode_name"]
 
-                geocode_name = "None"
-                if "geocode_name" in alert_body["info"]["area"]:
-                    if alert_body["info"]["area"]["geocode_name"] is not None:
-                        geocode_name = alert_body["info"]["area"]["geocode_name"]
+                    geocode_value = "None"
+                    if "geocode_value" in alert_info["area"]:
+                        if alert_info["area"]["geocode_value"] is not None:
+                            geocode_value = alert_info["area"]["geocode_value"]
 
-                geocode_value = "None"
-                if "geocode_value" in alert_body["info"]["area"]:
-                    if alert_body["info"]["area"]["geocode_value"] is not None:
-                        geocode_value = alert_body["info"]["area"]["geocode_value"]
-                filtered_alerts.append(Alert(category=category, event=event, urgency=urgency, severity=severity,
+                    informations.append(AlertInformationType(category=category, event=event, urgency=urgency, severity=severity,
                       certainty=certainty, effective=effective, senderName=senderName,
                       headline=headline, description=description, instruction=instruction,
-                      areaDesc=areaDesc, polygon=polygon, geocode_name=geocode_name, geocode_value=geocode_value,
-                      processed_time=datetime.datetime.now()))
+                      areaDesc=areaDesc, polygon=polygon, geocode_name=geocode_name, geocode_value=geocode_value))
+                new_alert.information = informations
+                filtered_alerts.append(new_alert)
             return filtered_alerts
 
         else:

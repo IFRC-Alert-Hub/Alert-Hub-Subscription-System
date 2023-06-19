@@ -1,7 +1,7 @@
 from django import forms
-from .models import alert
+from .models import Alert, AlertInfo
 
 class AlertForm(forms.ModelForm):
     class Meta:
-        model = alert
+        model = AlertInfo
         fields = ['headline', 'category', 'event', 'urgency', 'severity', 'certainty']
