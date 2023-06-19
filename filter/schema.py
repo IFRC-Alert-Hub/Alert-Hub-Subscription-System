@@ -1,9 +1,10 @@
 import graphene
 from graphene_django import DjangoObjectType
-from .models import Alert, AlertInfo
+from graphene import String, Int
+from .models import Alert, AlertInfo, Country, Region
 import datetime
 import requests
-
+import secrets
 
 #This function will return a string that represents a single match query term
 
@@ -14,6 +15,7 @@ import requests
 #Compare Expire Date
 #Show alerts based on Language Preference
 #Polygon Overlap
+#Security: Allowed csrf
 
 #Admin:
 #Verify signature
@@ -38,6 +40,54 @@ class AlertType(DjangoObjectType):
     def resolve_information(self, info):
         return self.information
 
+class RegionType(DjangoObjectType):
+    class Meta:
+        model = Region
+        fields = ["id", "name", "polygon"]
+
+class CountryType(DjangoObjectType):
+    class Meta:
+        model = Country
+        fields = ["region_id", "id", "name", "society_name", "polygon", "centroid"]
+
+
+
+class CreateRegion(graphene.Mutation):
+    class Arguments:
+        id = Int(required=True)
+        name = String(required=True)
+        polygon = String(required = True)
+
+    region = graphene.Field(RegionType)
+
+    def mutate(self, info, id, name, polygon):
+        region = Region(id=id, name=name, polygon = polygon)
+        region.save()
+        return CreateRegion(region=region)
+
+class CreateCountry(graphene.Mutation):
+    class Arguments:
+        id = Int(required=True)
+        region_id = Int()
+        name = String(required=True)
+        society_name = String(required=True)
+        polygon = String(required = True)
+        centroid = String(required = True)
+
+    country = graphene.Field(CountryType)
+
+    def mutate(self, info, id, name, society_name, polygon, centroid, region_id=None):
+        if region_id:
+            country = Country(id=id, name=name, society_name= society_name, region_id=Region.objects.get(id=region_id), polygon = polygon, centroid=centroid)
+        else:
+            country = Country(id=id, name=name, society_name=society_name, region_id=None,
+                              polygon=polygon, centroid=centroid)
+        country.save()
+        return CreateCountry(country=country)
+
+class Mutation(graphene.ObjectType):
+    create_region = CreateRegion.Field()
+    create_country = CreateCountry.Field()
 
 def generate_filtering_elastic_search_query_string(key, value):
     search_string = {
@@ -122,7 +172,7 @@ class Query(graphene.ObjectType):
 
             # Fetch the information of alerts and encapsulate these information into alert instance
             for alert in alerts:
-                new_alert = AlertType(hash_id = str(datetime.datetime.now().timestamp()))
+                new_alert = AlertType(hash_id =  secrets.token_hex(16))
                 alert_body = alert["_source"]["AlertBody"]
                 # It is quite confused that the info field can be both list or just an element
                 # Here I convert non-list element into a list.
@@ -215,4 +265,4 @@ class Query(graphene.ObjectType):
 
 
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -10,7 +10,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sample_dir', '0002_remove_alert_creation_date_remove_alert_desc_and_more'),
+        ('filter', '0002_remove_alert_creation_date_remove_alert_desc_and_more'),
     ]
 
     operations = [
@@ -76,11 +76,6 @@ class Migration(migrations.Migration):
             field=models.CharField(default=django.utils.timezone.now),
             preserve_default=False,
         ),
-        migrations.AlterField(
-            model_name='alert',
-            name='processed_time',
-            field=models.DateTimeField(auto_now=True),
-        ),
         migrations.CreateModel(
             name='AlertInfo',
             fields=[
@@ -99,7 +94,7 @@ class Migration(migrations.Migration):
                 ('geocode_name', models.CharField(default='None')),
                 ('geocode_value', models.CharField(default='None')),
                 ('senderName', models.CharField(default='Null', max_length=100)),
-                ('alert', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='infos', to='sample_dir.alert')),
+                ('alert', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='infos', to='filter.alert')),
             ],
         ),
     ]

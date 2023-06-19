@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sample_dir', '0001_initial'),
+        ('filter', '0001_initial'),
     ]
 
     operations = [
