@@ -36,7 +36,7 @@ for region in data:
                 }
             }
      }
-    ''' % (id, name, polygon)
+    ''' % (id, name, polygon.strip())
 
     # Send the mutation request to the GraphQL server
     response = requests.post('http://127.0.0.1:8000/alerts/graphql', json={'query': mutation})

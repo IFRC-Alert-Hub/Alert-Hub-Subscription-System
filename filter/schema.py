@@ -5,6 +5,8 @@ from .models import Alert, AlertInfo, Country, Region
 import datetime
 import requests
 import secrets
+from .views import compare_polygon
+from django.db.models import Q
 
 #This function will return a string that represents a single match query term
 
@@ -126,13 +128,25 @@ class Query(graphene.ObjectType):
 
         # Match query will store all the query strings
         match_query = []
+        polygons = []
         for key, value in filter_map.items():
             if key in FILTER_KEYWORDS:
                 match_query.append(generate_filtering_elastic_search_query_string(key, value))
             elif key == "hours_before":
                 hour_before = int(value)
+            elif key == "region":
+                matching_region = Region.objects.get(name=value)
+                if matching_region == None:
+                    return "The region name" + str(value) + "you provided is not identified."
+                polygons.append(matching_region.polygon)
+            elif key == "country":
+                matching_countries = Country.objects.filter(Q(name__iexact=value) | Q(society_name__iexact=value))
+                if len(matching_countries) == 0:
+                    return "The country name" + str(value) + "you provided is not identified."
+                for matching_country in matching_countries:
+                    polygons.append(matching_country.polygon)
             else:
-                print("Error: The Filter Contains Unrecongnised String")
+                return "Error: The Filter Contains Unrecongnised String"
         # Append a query section that querys evtTimestamp of the alert
         date_string = current_time - datetime.timedelta(hours=hour_before)
         date_query = {
@@ -172,14 +186,47 @@ class Query(graphene.ObjectType):
 
             # Fetch the information of alerts and encapsulate these information into alert instance
             for alert in alerts:
-                new_alert = AlertType(hash_id =  secrets.token_hex(16))
+                new_alert = AlertType(hash_id = secrets.token_hex(16))
                 alert_body = alert["_source"]["AlertBody"]
                 # It is quite confused that the info field can be both list or just an element
                 # Here I convert non-list element into a list.
+
+
                 if not isinstance(alert_body["info"], list):
                     alert_body["info"] = [alert_body["info"]]
                 informations = []
                 for alert_info in alert_body["info"]:
+                    #Check if two polygons intersect
+                    alert_polygon = "None"
+                    # Only if there is at least one alert whose polygon intersects with the specified region, record that region
+                    # Otherwise skip the processing.
+                    continue_loop = True
+                    #If the filter does not apply regional search, just record the polygon
+                    if len(polygons) == 0:
+                        if "polygon" in alert_info["area"]:
+                            if alert_info["area"]["polygon"] is not None:
+                                alert_polygon = alert_info["area"]["polygon"]
+                                continue_loop = False
+                    # If the filter applies regional search, compare the polygon of the alerts
+                    # If they do not intersect, then the alert is not relevant and should be removed.
+                    if len(polygons) != 0:
+                        if "polygon" in alert_info["area"]:
+                            if alert_info["area"]["polygon"] is not None:
+                                alert_polygon = alert_info["area"]["polygon"]
+                                #If there is at least one relevant alert that intersects with the region
+                                #Then record that alert
+                                for polygon in polygons:
+                                    if compare_polygon(alert_polygon, polygon):
+                                        continue_loop = False
+                                        break
+                            #If the polygon field to be compared is none, then stop processing this alert.
+                            else:
+                                continue
+                    #If the alert is not falling into any of specified region, then skip processing this alert.
+                    if continue_loop:
+                        continue
+
+
                     if type(alert_info["category"]) == list:
                         category = ' '.join(alert_info["category"])
                     elif alert_info["category"] is not None:
@@ -237,10 +284,7 @@ class Query(graphene.ObjectType):
                         if alert_info["area"]["areaDesc"] is not None:
                             areaDesc = alert_info["area"]["areaDesc"]
 
-                    polygon = "None"
-                    if "polygon" in alert_info["area"]:
-                        if alert_info["area"]["polygon"] is not None:
-                            polygon = alert_info["area"]["polygon"]
+
 
                     geocode_name = "None"
                     if "geocode_name" in alert_info["area"]:
@@ -255,7 +299,7 @@ class Query(graphene.ObjectType):
                     informations.append(AlertInformationType(category=category, event=event, urgency=urgency, severity=severity,
                       certainty=certainty, effective=effective, senderName=senderName,
                       headline=headline, description=description, instruction=instruction,
-                      areaDesc=areaDesc, polygon=polygon, geocode_name=geocode_name, geocode_value=geocode_value))
+                      areaDesc=areaDesc, polygon=alert_polygon, geocode_name=geocode_name, geocode_value=geocode_value))
                 new_alert.information = informations
                 filtered_alerts.append(new_alert)
             return filtered_alerts

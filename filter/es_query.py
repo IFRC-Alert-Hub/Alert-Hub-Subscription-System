@@ -43,11 +43,17 @@ hour_before = 3
 
 #Match query will store all the query strings
 match_query = []
+regions = []
+country = []
 for key, value in filter_map.items():
     if key in FILTER_KEYWORDS:
         match_query.append(generate_filtering_elastic_search_query_string(key, value))
     elif key == "hours_before":
         hour_before = int(value)
+    elif key == "region":
+        regions.append(value)
+    elif key == "country":
+        country.append(value)
     else:
         print("Error: The Filter Contains Unrecongnised String")
 # Append a query section that querys evtTimestamp of the alert

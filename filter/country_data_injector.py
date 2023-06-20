@@ -29,6 +29,7 @@ for country in data:
             polygon_list = country['bbox']['coordinates'][0]
             for coordinates in polygon_list:
                 polygon += str(coordinates[0]) + "," + str(coordinates[1]) + " "
+    
     centroid = ""
     if 'centroid' in country and country['centroid'] != None:
         if country['centroid']['type'] == 'Point':
@@ -46,7 +47,7 @@ for country in data:
                     }
                 }
             }
-        ''' % (id, name, society_name, polygon, centroid)
+        ''' % (id, name, society_name, polygon.strip(), centroid)
     else:
         # Construct the GraphQL mutation query with the converted values
         mutation = '''
