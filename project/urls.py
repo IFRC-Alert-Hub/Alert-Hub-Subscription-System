@@ -20,5 +20,6 @@ from sample_dir.views import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name = 'index'),
-    path('alerts/',include('sample_dir.urls'))
+    path('alerts/', include('sample_dir.urls')),
+    path('users/', include('users_dir.urls'))
 ]
