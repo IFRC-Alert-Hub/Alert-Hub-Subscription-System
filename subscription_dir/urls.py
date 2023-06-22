@@ -1,7 +1,7 @@
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 from subscription_dir.schema import schema
-from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     # ...

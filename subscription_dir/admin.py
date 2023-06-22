@@ -1,8 +1,7 @@
 from django.contrib import admin
+from .models import User, Region, Subscription
 
 # Register your models here.
-from .models import Alert,AlertInfo,Country, Region
-admin.site.register(Alert)
-admin.site.register(AlertInfo)
+admin.site.register(User)
 admin.site.register(Region)
-admin.site.register(Country)
+admin.site.register(Subscription)
