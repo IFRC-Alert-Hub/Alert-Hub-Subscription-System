@@ -13,6 +13,8 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from gqlauth.settings_type import GqlAuthSettings
+from strawberry.annotation import StrawberryAnnotation
+from strawberry.field import StrawberryField
 
 # get current env var
 DJANGO_ENV = os.getenv("DJANGO_ENV", default="dev")
@@ -74,10 +76,16 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+email_field = StrawberryField(
+    python_name="email", default=None, type_annotation=StrawberryAnnotation(str)
+)
+
 GQL_AUTH = GqlAuthSettings(
     LOGIN_REQUIRE_CAPTCHA=False,
     REGISTER_REQUIRE_CAPTCHA=False,
     ALLOW_LOGIN_NOT_VERIFIED=True,
+    LOGIN_FIELDS={email_field},
+    REGISTER_MUTATION_FIELDS={email_field}
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
