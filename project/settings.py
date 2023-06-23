@@ -80,11 +80,15 @@ email_field = StrawberryField(
     python_name="email", default=None, type_annotation=StrawberryAnnotation(str)
 )
 
+username_field = StrawberryField(
+    python_name="username", default=None, type_annotation=StrawberryAnnotation(str)
+)
+
 GQL_AUTH = GqlAuthSettings(
     LOGIN_REQUIRE_CAPTCHA=False,
     REGISTER_REQUIRE_CAPTCHA=False,
     ALLOW_LOGIN_NOT_VERIFIED=True,
-    LOGIN_FIELDS={email_field},
+    LOGIN_FIELDS={username_field},
     REGISTER_MUTATION_FIELDS={email_field}
 )
 
