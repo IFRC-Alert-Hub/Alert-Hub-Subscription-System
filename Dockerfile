@@ -15,7 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Upgrade pip and install any needed packages specified in requirements.txt
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt; pylint **/*.py
 
 # Expose port 8000 for the app
 EXPOSE 8000

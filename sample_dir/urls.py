@@ -5,5 +5,3 @@ from sample_dir.schema import schema
 urlpatterns = [
     path('graphql', GraphQLView.as_view(graphiql = True, schema = schema)),
 ]
-
-
