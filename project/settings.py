@@ -14,7 +14,11 @@ from pathlib import Path
 from gqlauth.settings_type import GqlAuthSettings
 from strawberry.annotation import StrawberryAnnotation
 from strawberry.field import StrawberryField
+from dotenv import load_dotenv
 
+if 'WEBSITE_HOSTNAME' not in os.environ:
+    print("Loading environment variables for .env file")
+    load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,8 +78,9 @@ GQL_AUTH = GqlAuthSettings(
     LOGIN_REQUIRE_CAPTCHA=False,
     REGISTER_REQUIRE_CAPTCHA=False,
     ALLOW_LOGIN_NOT_VERIFIED=True,
-    LOGIN_FIELDS={username_field},
-    REGISTER_MUTATION_FIELDS={email_field}
+    LOGIN_FIELDS={email_field},
+    REGISTER_MUTATION_FIELDS={email_field},
+
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -20,6 +20,7 @@ class Mutation:
     password_reset = mutations.PasswordReset.field
     refresh_token = mutations.RefreshToken.field
     revoke_token = mutations.RevokeToken.field
+    update_account = mutations.UpdateAccount.field
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
