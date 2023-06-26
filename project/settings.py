@@ -85,7 +85,6 @@ GQL_AUTH = GqlAuthSettings(
 
 )
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ROOT_URLCONF = 'project.urls'
 
@@ -173,3 +172,12 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# SMTP Settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'uclalert0@gmail.com'
+EMAIL_HOST_PASSWORD = 'lqlauyiauhrtvoif'
+DEFAULT_FROM_EMAIL = 'Celery <uclalert0@gmail.com>'

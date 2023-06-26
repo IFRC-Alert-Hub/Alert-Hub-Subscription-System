@@ -27,6 +27,7 @@ app.config_from_object(settings, namespace='CELERY')
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
 
+CELERY_IMPORTS = ('subscription_manager_dir.tasks', )
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
