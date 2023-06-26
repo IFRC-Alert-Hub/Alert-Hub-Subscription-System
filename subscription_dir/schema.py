@@ -6,26 +6,28 @@ from .models import Subscription
 class SubscriptionType(DjangoObjectType):
     class Meta:
         model = Subscription
-        fields = ["id", "user_id", "country_ids", "category", "urgency", "severity", "subscribe_by"]
+        fields = ["id", "user_id", "country_ids", "urgency_array", "severity_array",
+                  "certainty_array", "subscribe_by"]
 
 
 class CreateSubscription(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
         country_ids = graphene.List(graphene.Int)
-        category = graphene.String(required=True)
-        urgency = graphene.Int(required=True)
-        severity = graphene.Int(required=True)
-        subscribe_by = graphene.String(required=True)
+        urgency_array = graphene.List(graphene.String)
+        severity_array = graphene.List(graphene.String)
+        certainty_array = graphene.List(graphene.String)
+        subscribe_by = graphene.List(graphene.String)
 
     subscription = graphene.Field(SubscriptionType)
 
-    def mutate(self, info, user_id, country_ids, category, urgency, severity, subscribe_by):
+    def mutate(self, info, user_id, country_ids, urgency_array, severity_array, certainty_array,
+               subscribe_by):
         subscription = Subscription(user_id=user_id,
                                     country_ids=country_ids,
-                                    category=category,
-                                    urgency=urgency,
-                                    severity=severity,
+                                    urgency_array=urgency_array,
+                                    severity_array=severity_array,
+                                    certainty_array=certainty_array,
                                     subscribe_by=subscribe_by)
         subscription.save()
         return CreateSubscription(subscription=subscription)
@@ -47,21 +49,21 @@ class UpdateSubscription(graphene.Mutation):
         subscription_id = graphene.Int(required=True)
         user_id = graphene.Int(required=True)
         country_ids = graphene.List(graphene.Int)
-        category = graphene.String(required=True)
-        urgency = graphene.Int(required=True)
-        severity = graphene.Int(required=True)
-        subscribe_by = graphene.String(required=True)
+        urgency_array = graphene.List(graphene.String)
+        severity_array = graphene.List(graphene.String)
+        certainty_array = graphene.List(graphene.String)
+        subscribe_by = graphene.List(graphene.String)
 
     subscription = graphene.Field(SubscriptionType)
 
-    def mutate(self, info,
-               subscription_id, user_id, country_ids, category, urgency, severity, subscribe_by):
+    def mutate(self, info, subscription_id, user_id, country_ids, urgency_array, severity_array,
+               certainty_array, subscribe_by):
         subscription = Subscription.objects.get(id=subscription_id)
         subscription.user_id = user_id
         subscription.country_ids = country_ids
-        subscription.category = category
-        subscription.urgency = urgency
-        subscription.severity = severity
+        subscription.urgency_array = urgency_array
+        subscription.severity_array = severity_array
+        subscription.certainty_array = certainty_array
         subscription.subscribe_by = subscribe_by
         subscription.save()
         return UpdateSubscription(subscription=subscription)
@@ -79,9 +81,9 @@ class Query(graphene.ObjectType):
                                                  user_id=graphene.Int())
     list_subscription = graphene.List(SubscriptionType,
                                       country_ids=graphene.List(graphene.Int),
-                                      category=graphene.String(),
-                                      urgency=graphene.Int(),
-                                      severity=graphene.Int())
+                                      urgency_array=graphene.List(graphene.String),
+                                      severity_array=graphene.List(graphene.String),
+                                      certainty_array=graphene.List(graphene.String))
     get_subscription = graphene.Field(SubscriptionType,
                                       subscription_id=graphene.Int())
 
@@ -91,16 +93,12 @@ class Query(graphene.ObjectType):
     def resolve_list_subscription_by_user_id(self, info, user_id):
         return Subscription.objects.filter(user_id=user_id)
 
-    def resolve_list_subscription(self, info, country_ids, category, urgency, severity):
-        query_set = Subscription.objects.filter(urgency__gte=urgency,
-                                               severity__gte=severity)
-        if len(country_ids) > 0:
-            query_set = query_set.filter(country_ids__contains=country_ids)
-
-        if category != "":
-            query_set = query_set.filter(category=category)
-
-        return query_set
+    def resolve_list_subscription(self, info, country_ids, urgency_array, severity_array,
+                                  certainty_array):
+        return Subscription.objects.filter(country_ids__contains=country_ids,
+                                           urgency_array__contains=urgency_array,
+                                           severity_array__contains=severity_array,
+                                           certainty_array__contains=certainty_array)
 
     def resolve_get_subscription(self, info, subscription_id):
         return Subscription.objects.get(id=subscription_id)
