@@ -10,24 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
-from dotenv import load_dotenv
 from pathlib import Path
+from dotenv import load_dotenv
 
 
-# get current env var
-DJANGO_ENV = os.getenv("DJANGO_ENV", default="dev")
-
-# choose the envfile
-if DJANGO_ENV == "prod":
-    dotenv_file = ".env.prod"
-else:
-    dotenv_file = ".env.dev"
-
-# ensure .env.dev file exists
-dotenv_file = Path(__file__).resolve().parent.parent / dotenv_file
-
-# load .env.dev file
-load_dotenv(dotenv_file)
+if 'WEBSITE_HOSTNAME' not in os.environ:
+    print("Loading environment variables for .env file")
+    load_dotenv('.env')
+    
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', default=False) == 'True'
+DEBUG = os.getenv('DEBUG', default=False)
 
 ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
