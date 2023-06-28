@@ -1,10 +1,11 @@
 from datetime import timedelta
 
+from uuid import uuid4
+
 import graphene
 import graphql_jwt
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
-from uuid import uuid4
 
 from django.contrib.auth import logout
 from django.utils import timezone
@@ -32,11 +33,11 @@ class UserType(DjangoObjectType):
 class Query(graphene.ObjectType):
     profile = graphene.Field(UserType)
 
-    @staticmethod
     @login_required
-    def resolve_profile(cls, info, **kwargs):
+    def resolve_profile(self, info, **kwargs):
         if info.context.user.is_authenticated:
             return info.context.user
+        return None
 
 
 class Register(graphene.Mutation):
@@ -142,7 +143,6 @@ class ResetEmail(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
-    @staticmethod
     @login_required
     def mutate(self, info, email):
         try:
@@ -228,12 +228,12 @@ class UpdateProfile(graphene.Mutation):
         city = graphene.String(default_value=None)
         avatar = graphene.String(default_value=None)
 
-    @staticmethod
     @login_required
     def mutate(self, info, username, country, city, avatar):
         user = info.context.user
 
-        if CustomUser.objects.filter(username__iexact=username).exclude(pk=user.pk).exists() and username:
+        if CustomUser.objects.filter(username__iexact=username).exclude(
+                pk=user.pk).exists() and username:
             errors = ['usernameAlreadyExists']
             return UpdateProfile(success=False, errors=errors)
 
@@ -250,7 +250,6 @@ class Logout(graphene.Mutation):
 
     success = graphene.Boolean()
 
-    @staticmethod
     @login_required
     def mutate(self, info):
         logout(info.context)

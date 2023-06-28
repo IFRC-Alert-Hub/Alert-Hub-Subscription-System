@@ -1,18 +1,19 @@
 from django.contrib.auth import get_user_model
-from celery import shared_task
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+
+from celery import shared_task
 
 from project import settings
 
 
 @shared_task(bind=True)
 def send_email(self, user_id, subject, template_name, context=None):
-    User = get_user_model()
+    custom_user = get_user_model()
     try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
+        user = custom_user.objects.get(id=user_id)
+    except custom_user.DoesNotExist:
         return "Invalid User ID"
 
     context = context or {}

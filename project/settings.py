@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Only for Local Development - Load environment variables from the .env file
+if 'WEBSITE_HOSTNAME' not in os.environ:
+    print("Loading environment variables for .env file")
+    load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
