@@ -11,14 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-from gqlauth.settings_type import GqlAuthSettings
-from strawberry.annotation import StrawberryAnnotation
-from strawberry.field import StrawberryField
-from dotenv import load_dotenv
-
-if 'WEBSITE_HOSTNAME' not in os.environ:
-    print("Loading environment variables for .env file")
-    load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +30,7 @@ CSRF_TRUSTED_ORIGINS = ['https://' + os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE
 INSTALLED_APPS = [
     'subscription_dir',
     'sample_dir',
-    'users_dir',
+    'user_dir',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,8 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
-    "strawberry_django",
-    "gqlauth",
     'django_celery_results',
     'django_celery_beat',
 ]
@@ -61,30 +51,21 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gqlauth.core.middlewares.django_jwt_middleware'
 ]
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
+    "graphql_jwt.backends.JSONWebTokenBackend",
 ]
 
-email_field = StrawberryField(
-    python_name="email", default=None, type_annotation=StrawberryAnnotation(str)
-)
+GRAPHENE = {
+    "SCHEMA": "mysite.myschema.schema",
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
+}
 
-username_field = StrawberryField(
-    python_name="username", default=None, type_annotation=StrawberryAnnotation(str)
-)
-
-GQL_AUTH = GqlAuthSettings(
-    LOGIN_REQUIRE_CAPTCHA=False,
-    REGISTER_REQUIRE_CAPTCHA=False,
-    ALLOW_LOGIN_NOT_VERIFIED=True,
-    LOGIN_FIELDS={email_field},
-    REGISTER_MUTATION_FIELDS={email_field},
-
-)
-
+WEBSITE_URL = 'ifrc.com'
 
 ROOT_URLCONF = 'project.urls'
 
@@ -163,7 +144,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users_dir.CustomUser'
+AUTH_USER_MODEL = 'user_dir.CustomUser'
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = ['application/json']
