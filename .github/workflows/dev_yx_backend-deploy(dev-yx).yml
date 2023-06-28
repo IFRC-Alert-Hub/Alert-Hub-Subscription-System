@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'backend-deploy'
           slot-name: 'dev-yx'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_89AABD6043514140BD38EFF516334AD6 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F9E5336595B24D61AE14422195624650 }}
