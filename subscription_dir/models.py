@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 
 class Subscription(models.Model):
     id = models.AutoField(primary_key=True)
+    subscription_name = models.CharField(default="", verbose_name="subscription_name")
     user_id = models.IntegerField(default=0, verbose_name="user_id")
     country_ids = ArrayField(models.IntegerField(verbose_name='country_ids'), default=list)
     urgency_array = ArrayField(models.CharField(verbose_name='urgency_array'), default=list)

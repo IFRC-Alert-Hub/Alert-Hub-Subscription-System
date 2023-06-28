@@ -6,13 +6,14 @@ from .models import Subscription
 class SubscriptionType(DjangoObjectType):
     class Meta:
         model = Subscription
-        fields = ["id", "user_id", "country_ids", "urgency_array", "severity_array",
-                  "certainty_array", "subscribe_by"]
+        fields = ["id", "subscription_name", "user_id", "country_ids",
+                  "urgency_array", "severity_array", "certainty_array", "subscribe_by"]
 
 
 class CreateSubscription(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
+        subscription_name = graphene.String(required=True)
         country_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
         severity_array = graphene.List(graphene.String)
@@ -21,9 +22,10 @@ class CreateSubscription(graphene.Mutation):
 
     subscription = graphene.Field(SubscriptionType)
 
-    def mutate(self, info, user_id, country_ids, urgency_array, severity_array, certainty_array,
-               subscribe_by):
+    def mutate(self, info, subscription_name, user_id, country_ids,
+               urgency_array, severity_array, certainty_array, subscribe_by):
         subscription = Subscription(user_id=user_id,
+                                    subscription_name=subscription_name,
                                     country_ids=country_ids,
                                     urgency_array=urgency_array,
                                     severity_array=severity_array,
@@ -47,6 +49,7 @@ class DeleteSubscription(graphene.Mutation):
 class UpdateSubscription(graphene.Mutation):
     class Arguments:
         subscription_id = graphene.Int(required=True)
+        subscription_name = graphene.String(required=True)
         user_id = graphene.Int(required=True)
         country_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
@@ -56,9 +59,10 @@ class UpdateSubscription(graphene.Mutation):
 
     subscription = graphene.Field(SubscriptionType)
 
-    def mutate(self, info, subscription_id, user_id, country_ids, urgency_array, severity_array,
-               certainty_array, subscribe_by):
+    def mutate(self, info, subscription_id, subscription_name, user_id, country_ids,
+               urgency_array, severity_array, certainty_array, subscribe_by):
         subscription = Subscription.objects.get(id=subscription_id)
+        subscription.subscription_name = subscription_name
         subscription.user_id = user_id
         subscription.country_ids = country_ids
         subscription.urgency_array = urgency_array
