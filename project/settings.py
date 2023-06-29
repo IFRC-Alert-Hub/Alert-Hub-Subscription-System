@@ -13,11 +13,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-
-if 'WEBSITE_HOSTNAME' not in os.environ:
-    print("Loading environment variables for .env file")
-    load_dotenv('.env')
-    
+# Load environment variables for .env file
+dotenv_file = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
