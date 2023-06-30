@@ -24,5 +24,5 @@ urlpatterns = [
     path('alerts/', include('sample_dir.urls')),
     path('users/', include('user_dir.urls')),
     path('subscription/', include('subscription_dir.urls')),
-    path('send/', include('subscription_manager_dir.urls'))
+    path('subscription_manager/', include('subscription_manager_dir.urls'))
 ]
