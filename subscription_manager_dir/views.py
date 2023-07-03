@@ -1,5 +1,7 @@
 from django.http import HttpResponse
-from .tasks import send_mail_fun
+from .tasks import send_mail_fun, send_subscription_email
+from subscription_dir.models import Subscription
+from user_dir.models import CustomUser
 import json
 def send_mail_to_all(request):
     send_mail_fun.delay()
@@ -16,8 +18,32 @@ import threading
 
 def run_websocket():
     def on_message(ws, message):
-        # Process the received message
-        print("Received message:", message)
+        # Process the received alert
+        alert_map = json.loads(message)["message"]
+        print(alert_map)
+        Matched_Subscription = Subscription.objects.filter(country_ids__contains=[alert_map["country_id"]],
+                                                           urgency_array__contains=[alert_map["urgency"]],
+                                                           severity_array__contains=[alert_map["severity"]],
+                                                           certainty_array__contains=[alert_map["certainty"]]
+                                                           )
+        for subscription in Matched_Subscription:
+            context = {
+                'country_name': alert_map["country_name"],
+                'urgency': alert_map["urgency"],
+                'severity': alert_map["severity"],
+                'certainty': alert_map["certainty"],
+            }
+            print(context)
+            try:
+                send_subscription_email.delay(subscription.user_id, 'New Alerts Matching Your Subscription', 'subscription_email.html', context)
+            except Exception as e:
+                print(f"Error: {e}")
+
+
+
+
+
+
 
 
 
@@ -44,6 +70,6 @@ async def main():
         await asyncio.sleep(1)
 # Create your views here.
 # Disable SSL certificate verification if needed
-def send_packet(request):
+def receive_alert(request):
     # Run the asyncio event loop
     asyncio.run(main())
