@@ -59,10 +59,6 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'backend-deploy'
-<<<<<<<< HEAD:.github/workflows/dev_yx_backend-deploy(dev-yx).yml
           slot-name: 'dev-yx'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F9E5336595B24D61AE14422195624650 }}
-========
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2053317864F147AAA381CDDCC26D3538 }}
->>>>>>>> dev_cyc:.github/workflows/main_backend-deploy.yml
+
