@@ -95,7 +95,8 @@ class SendVerifyEmail(graphene.Mutation):
             'verification_token': email_verification_token,
         }
 
-        send_email_by_address.delay(email, 'Activate your account.', 'email_verification.html', context)
+        send_email_by_address.delay(email, 'Activate your account.', 'email_verification.html',
+                                    context)
 
         return SendVerifyEmail(success=True)
 
