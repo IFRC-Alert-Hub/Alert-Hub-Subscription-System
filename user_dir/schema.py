@@ -1,3 +1,4 @@
+import random
 from datetime import timedelta
 
 from uuid import uuid4
@@ -9,9 +10,10 @@ from graphene_django import DjangoObjectType
 
 from django.contrib.auth import logout
 from django.utils import timezone
+from django.core.cache import cache
 
 from .models import CustomUser
-from .tasks import send_email
+from .tasks import send_email, send_email_by_address
 
 
 class UserType(DjangoObjectType):
@@ -49,57 +51,29 @@ class Register(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
+        verify_code = graphene.String(required=True)
 
-    def mutate(self, info, email, password):
+    def mutate(self, info, email, password, verify_code):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ['emailAlreadyExists']
+            return Register(success=False, errors=errors)
+
+        if verify_code != cache.get(email):
+            errors = ['wrongVerifyCode']
             return Register(success=False, errors=errors)
 
         # create user
         user = CustomUser.objects.create(email=email)
         user.set_password(password)
 
-        # create email verification link
-        user.email_verification_token = uuid4()
-        user.email_verification_token_expires_at = timezone.now() + timedelta(days=30)
-
         user.save()
 
-        context = {
-            'verification_token': user.email_verification_token,
-        }
-
-        send_email.delay(user.id, 'Activate your account.', 'email_verification.html', context)
+        cache.delete(email)
 
         return Register(success=True)
 
 
-class VerifyEmail(graphene.Mutation):
-    """ Mutation for verifying an email """
-
-    success = graphene.Boolean()
-    errors = graphene.List(graphene.String)
-
-    class Arguments:
-        token = graphene.String(required=True)
-
-    def mutate(self, info, token):
-        try:
-            user = CustomUser.objects.get(email_verification_token=token)
-        except CustomUser.DoesNotExist:
-            errors = ['wrongToken']
-            return VerifyEmail(success=False, errors=errors)
-
-        if timezone.now() > user.email_verification_token_expires_at:
-            errors = ['Token has expired']
-            return VerifyEmail(success=False, errors=errors)
-
-        user.verified = True
-        user.save()
-        return VerifyEmail(success=True)
-
-
-class ResendVerifyEmail(graphene.Mutation):
+class SendVerifyEmail(graphene.Mutation):
     """ Mutation for resending email verification """
 
     success = graphene.Boolean()
@@ -109,29 +83,21 @@ class ResendVerifyEmail(graphene.Mutation):
         email = graphene.String(required=True)
 
     def mutate(self, info, email):
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            errors = ['userDoesNotExists']
-            return ResendVerifyEmail(success=False, errors=errors)
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            errors = ['emailAlreadyExists']
+            return SendVerifyEmail(success=False, errors=errors)
 
-        if user.verified:
-            errors = ['emailAlreadyVerified']
-            return ResendVerifyEmail(success=False, errors=errors)
-
-        # create email verification link
-        user.email_verification_token = uuid4()
-        user.email_verification_token_expires_at = timezone.now() + timedelta(days=30)
-
-        user.save()
+        email_verification_token = str(random.randint(0, 999999))
+        print(email_verification_token)
+        cache.set(email, email_verification_token, 300)
 
         context = {
-            'verification_token': user.email_verification_token,
+            'verification_token': email_verification_token,
         }
 
-        send_email.delay(user.id, 'Activate your account.', 'email_verification.html', context)
+        send_email_by_address.delay(email, 'Activate your account.', 'email_verification.html', context)
 
-        return ResendVerifyEmail(success=True)
+        return SendVerifyEmail(success=True)
 
 
 class ResetEmail(graphene.Mutation):
@@ -320,8 +286,7 @@ class ResetPasswordConfirm(graphene.Mutation):
 
 class Mutation(graphene.ObjectType):
     register = Register.Field()
-    verify = VerifyEmail.Field()
-    resend_verify_email = ResendVerifyEmail.Field()
+    send_verify_email = SendVerifyEmail.Field()
 
     login = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()

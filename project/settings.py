@@ -168,3 +168,10 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'uclalert0@gmail.com'
 EMAIL_HOST_PASSWORD = 'lqlauyiauhrtvoif'
 DEFAULT_FROM_EMAIL = 'Celery <uclalert0@gmail.com>'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'verify_code',
+    }
+}

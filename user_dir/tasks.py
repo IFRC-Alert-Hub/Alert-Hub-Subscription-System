@@ -32,3 +32,18 @@ def send_email(self, user_id, subject, template_name, context=None):
     )
 
     return "Done"
+
+@shared_task(bind=True)
+def send_email_by_address(self, email, subject, template_name, context=None):
+
+    message = render_to_string(template_name, context)
+
+    send_mail(
+        subject=subject,
+        message=strip_tags(message),
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[email],
+        fail_silently=True,
+    )
+
+    return "Done"
