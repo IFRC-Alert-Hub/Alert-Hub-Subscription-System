@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.core.cache import cache
 
 from .models import CustomUser
-from .tasks import send_email, send_email_by_address
+from .tasks import send_email
 
 
 class UserType(DjangoObjectType):
@@ -28,7 +28,6 @@ class UserType(DjangoObjectType):
             'avatar',
             'country',
             'city',
-            'verified',
         ]
 
 
@@ -58,7 +57,13 @@ class Register(graphene.Mutation):
             errors = ['emailAlreadyExists']
             return Register(success=False, errors=errors)
 
-        if verify_code != cache.get(email):
+        true_code = cache.get(email + "_register")
+
+        if true_code is None:
+            errors = ['verifyCodeExpired']
+            return Register(success=False, errors=errors)
+
+        if verify_code != true_code:
             errors = ['wrongVerifyCode']
             return Register(success=False, errors=errors)
 
@@ -74,7 +79,7 @@ class Register(graphene.Mutation):
 
 
 class SendVerifyEmail(graphene.Mutation):
-    """ Mutation for resending email verification """
+    """ Mutation for sending email verification for first registration"""
 
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
@@ -88,99 +93,165 @@ class SendVerifyEmail(graphene.Mutation):
             return SendVerifyEmail(success=False, errors=errors)
 
         email_verification_token = str(random.randint(0, 999999))
-        print(email_verification_token)
-        cache.set(email, email_verification_token, 300)
+        cache.set(email + "_register", email_verification_token, 300)
 
         context = {
             'verification_token': email_verification_token,
         }
 
-        send_email_by_address.delay(email, 'Activate your account.', 'email_verification.html',
-                                    context)
+        send_email.delay(email, 'Activate your account.', 'email_verification.html',
+                         context)
 
         return SendVerifyEmail(success=True)
 
 
 class ResetEmail(graphene.Mutation):
-    """ Mutation to reset an email """
+    """ Mutation to request to reset an email """
 
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    class Arguments:
-        email = graphene.String(required=True)
-
     @login_required
-    def mutate(self, info, email):
-        try:
-            user = CustomUser.objects.get(email=email)
-            if user.verified is False:
-                errors = ['emailNotVerified']
-                return ResetPassword(success=False, errors=errors)
-        except CustomUser.DoesNotExist:
-            errors = ['emailDoesNotExists']
-            return ResetPassword(success=False, errors=errors)
+    def mutate(self, info):
+        if info.context.user.is_authenticated:
+            user = info.context.user
+        else:
+            errors = ['wrongUser']
+            return ResetEmail(success=False, errors=errors)
 
-        # create email verification link
-        user.email_reset_token = uuid4()
-        user.email_reset_token_expires_at = timezone.now() + timedelta(days=1)
+        verification_code = str(random.randint(0, 999999))
+        cache.set(user.email + "_email_reset", verification_code, 300)
 
         user.save()
 
         context = {
-            'reset_token': user.email_reset_token,
+            'reset_token': verification_code,
         }
 
-        send_email.delay(user.id, 'Confirmation for resetting email.', 'email_reset.html', context)
+        send_email.delay(user.email, 'Confirmation for resetting email.', 'email_reset.html',
+                         context)
 
         return ResetEmail(success=True)
 
 
 class ResetEmailConfirm(graphene.Mutation):
+    """ Mutation for confirm requesting a email reset """
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    token = graphene.String()
+
+    class Arguments:
+        verify_code = graphene.String(required=True)
+
+    @login_required
+    def mutate(self, info, verify_code):
+        if info.context.user.is_authenticated:
+            user = info.context.user
+        else:
+            errors = ['wrongUser']
+            return ResetEmailConfirm(success=False, errors=errors)
+
+        true_code = cache.get(user.email + "_email_reset")
+
+        if true_code is None:
+            errors = ['verifyCodeExpired']
+            return ResetEmailConfirm(success=False, errors=errors)
+
+        if verify_code != true_code:
+            errors = ['wrongVerifyCode']
+            return ResetEmailConfirm(success=False, errors=errors)
+
+        reset_token = uuid4()
+        cache.set(user.email + "_confirm", reset_token, 600)
+
+        cache.delet(user.email + "_email_reset")
+
+        return ResetEmailConfirm(success=True, token=reset_token)
+
+
+class SendNewVerifyEmail(graphene.Mutation):
     """ Mutation for requesting a password reset email """
 
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
     class Arguments:
-        token = graphene.String(required=True)
-        email = graphene.String(required=True)
+        token = graphene.UUID(required=True)
+        new_email = graphene.String(required=True)
 
-    def mutate(self, info, token, email):
-        # Check if the token is empty
-        if not token:
-            errors = ['emptyToken']
-            return ResetPasswordConfirm(success=False, errors=errors)
+    @login_required
+    def mutate(self, info, token, new_email):
 
-        try:
-            user = CustomUser.objects.get(email_reset_token=token)
-        except CustomUser.DoesNotExist:
-            errors = ['wrongToken']
+        if info.context.user.is_authenticated:
+            user = info.context.user
+        else:
+            errors = ['wrongUser']
             return ResetEmailConfirm(success=False, errors=errors)
 
-        if CustomUser.objects.filter(email__iexact=email).exists():
+        true_code = cache.get(user.email + "_confirm")
+
+        if true_code is None:
+            errors = ['sessionExpired']
+            return SendNewVerifyEmail(success=False, errors=errors)
+
+        if CustomUser.objects.filter(email__iexact=new_email).exists():
             errors = ['emailAlreadyExists']
-            return Register(success=False, errors=errors)
+            return SendNewVerifyEmail(success=False, errors=errors)
 
-        user.email = email
-        user.email_reset_token = uuid4()
-        user.verified = False
+        if token != true_code:
+            errors = ['wrongToken']
+            return SendNewVerifyEmail(success=False, errors=errors)
 
-        # create email verification link
-        user.email_verification_token = uuid4()
-        user.email_verification_token_expires_at = timezone.now() + timedelta(days=30)
+        email_verification_token = str(random.randint(0, 999999))
+        cache.set(new_email + "_new_verify", email_verification_token, 300)
 
-        user.email_reset_token = uuid4()
+        context = {
+            'verification_token': email_verification_token,
+        }
+
+        send_email.delay(new_email, 'Verify your new email.', 'email_verification.html', context)
+
+
+        return SendNewVerifyEmail(success=True, token=token)
+
+
+class NewEmailConfirm(graphene.Mutation):
+    """ Mutation to confirm the new email. """
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+
+    class Arguments:
+        new_email = graphene.String(required=True)
+        verify_code = graphene.String(required=True)
+
+    @login_required
+    def mutate(self, info, new_email, verify_code):
+        if info.context.user.is_authenticated:
+            user = info.context.user
+        else:
+            errors = ['wrongUser']
+            return ResetEmailConfirm(success=False, errors=errors)
+
+        true_code = cache.get(new_email + "_new_verify")
+
+        if true_code is None:
+            errors = ['verifyCodeExpired']
+            return NewEmailConfirm(success=False, errors=errors)
+
+        if verify_code != true_code:
+            errors = ['wrongVerifyCode']
+            return NewEmailConfirm(success=False, errors=errors)
+
+        # create user
+        user.email = new_email
 
         user.save()
 
-        context = {
-            'verification_token': user.email_verification_token,
-        }
+        cache.delete(new_email + "_new_verify")
 
-        send_email.delay(user.id, 'Verify your new email.', 'email_verification.html', context)
-
-        return ResetEmailConfirm(success=True)
+        return NewEmailConfirm(success=True)
 
 
 class UpdateProfile(graphene.Mutation):
@@ -235,16 +306,13 @@ class ResetPassword(graphene.Mutation):
     def mutate(self, info, email):
         try:
             user = CustomUser.objects.get(email=email)
-            if user.verified is False:
-                errors = ['emailNotVerified']
-                return ResetPassword(success=False, errors=errors)
         except CustomUser.DoesNotExist:
             errors = ['emailDoesNotExists']
             return ResetPassword(success=False, errors=errors)
 
         # create email verification link
-        user.password_reset_token = uuid4()
-        user.password_reset_token_expires_at = timezone.now() + timedelta(days=1)
+        user.password_reset_token = str(random.randint(0, 999999))
+        user.password_reset_token_expires_at = timezone.now() + timedelta(minutes=5)
 
         user.save()
 
@@ -252,7 +320,7 @@ class ResetPassword(graphene.Mutation):
             'reset_token': user.password_reset_token,
         }
 
-        send_email.delay(user.id, 'Reset your password.', 'password_reset.html', context)
+        send_email.delay(email, 'Reset your password.', 'password_reset.html', context)
 
         return ResetPassword(success=True)
 
@@ -270,13 +338,13 @@ class ResetPasswordConfirm(graphene.Mutation):
     def mutate(self, info, token, password):
         # Check if the token is empty
         if not token:
-            errors = ['emptyToken']
+            errors = ['emptyVerifyCode']
             return ResetPasswordConfirm(success=False, errors=errors)
 
         try:
             user = CustomUser.objects.get(password_reset_token=token)
         except CustomUser.DoesNotExist:
-            errors = ['wrongToken']
+            errors = ['wrongVerifyCode']
             return ResetPasswordConfirm(success=False, errors=errors)
 
         user.set_password(password)
@@ -299,6 +367,8 @@ class Mutation(graphene.ObjectType):
     reset_password_confirm = ResetPasswordConfirm.Field()
     reset_email = ResetEmail.Field()
     reset_email_confirm = ResetEmailConfirm.Field()
+    send_new_verify_email = SendNewVerifyEmail.Field()
+    new_email_confirm = NewEmailConfirm.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
