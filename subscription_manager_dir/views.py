@@ -1,3 +1,5 @@
+import os
+
 from django.http import HttpResponse
 from .tasks import send_mail_fun, send_subscription_email
 from subscription_dir.models import Subscription
@@ -48,7 +50,8 @@ def run_websocket():
 
 
     # Create a WebSocket connection
-    ws = websocket.WebSocketApp("ws://127.0.0.1:8000/ws/fetch_new_alert/1a/")
+    host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
+    ws = websocket.WebSocketApp(host_name)
 
     # Set the callback function for incoming messages
     ws.on_message = on_message
