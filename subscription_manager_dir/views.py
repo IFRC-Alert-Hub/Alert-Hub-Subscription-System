@@ -1,5 +1,6 @@
 import os
 
+import websocket
 from django.http import HttpResponse
 from .tasks import send_mail_fun, send_subscription_email
 from subscription_dir.models import Subscription
@@ -10,7 +11,6 @@ def send_mail_to_all(request):
     return HttpResponse("Sent")
 
 import asyncio
-import websocket
 import threading
 
 #def send_packet(request):
