@@ -30,9 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # CSRF_TRUSTED_ORIGINS = [
-#     'http://localhost:3000',
-#     'https://' + os.environ['WEBSITE_HOSTNAME']
-# ] if 'WEBSITE_HOSTNAME' in os.environ else []
+#     'https://' + os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # Application definition
 
@@ -182,7 +180,4 @@ CACHES = {
     }
 }
 
-CORS_ALLOWED_ORIGINS = [
-   "http://localhost:3000/",
-   "https://alert-hub-frontend.azurewebsites.net/"
-]
+CORS_ORIGIN_ALLOW_ALL = True
