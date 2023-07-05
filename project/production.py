@@ -8,7 +8,21 @@ from .settings import BASE_DIR
 ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 CSRF_TRUSTED_ORIGINS = ['https://' + os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 DEBUG = True
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/path/to/your/logs/debug.log',
+        },
+    },
+    'root': {
+        'handlers': ['file'],
+        'level': 'DEBUG',
+    },
+}
 # WhiteNoise configuration
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
