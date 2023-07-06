@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -55,7 +56,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -69,7 +70,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 GRAPHENE = {
-    "SCHEMA": "mysite.myschema.schema",
+    "SCHEMA": "user_dir.schema.schema",
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
@@ -181,3 +182,12 @@ CACHES = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+GRAPHQL_JWT = {
+    "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
+    "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
+    "JWT_HIDE_TOKEN_FIELDS": True,
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
+}

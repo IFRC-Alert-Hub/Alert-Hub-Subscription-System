@@ -55,3 +55,15 @@ CACHES = {
         'LOCATION': 'verify_code',
     }
 }
+
+GRAPHENE = {
+    "SCHEMA": "user_dir.schema.schema",
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
+}
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "graphql_jwt.backends.JSONWebTokenBackend",
+]
