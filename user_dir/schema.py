@@ -1,4 +1,3 @@
-import json
 import random
 from datetime import timedelta
 
@@ -321,8 +320,8 @@ class Logout(graphene.Mutation):
             user.save()
 
             return cls(id=user.id, success=True)
-        except Exception as e:
-            return cls(success=False, errors=[str(e)])
+        except AttributeError as error:
+            return cls(success=False, errors=str(error))
 
 
 class ResetPassword(graphene.Mutation):
@@ -366,14 +365,14 @@ class ResetPasswordConfirm(graphene.Mutation):
         verifyCode = graphene.String(required=True)
         password = graphene.String(required=True)
 
-    def mutate(self, info, verifyCode, password):
+    def mutate(self, info, verify_code, password):
         # Check if the token is empty
-        if not verifyCode:
+        if not verify_code:
             errors = ErrorType(verifyCode='Empty verify code')
             return ResetPasswordConfirm(success=False, errors=errors)
 
         try:
-            user = CustomUser.objects.get(password_reset_token=verifyCode)
+            user = CustomUser.objects.get(password_reset_token=verify_code)
         except CustomUser.DoesNotExist:
             errors = ErrorType(verifyCode='Wrong verify code.')
             return ResetPasswordConfirm(success=False, errors=errors)
