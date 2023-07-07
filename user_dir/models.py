@@ -28,14 +28,19 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, blank=False, max_length=255, verbose_name="email")
+
     phoneNumber = models.CharField(unique=True, null=True, max_length=255, verbose_name="phone")
+
     avatar = models.CharField(null=True, blank=True, max_length=255)
     country = models.CharField(null=True, blank=True, max_length=255)
     city = models.CharField(null=True, blank=True, max_length=255)
-    username = models.CharField(null=True, unique=True, max_length=255, verbose_name="username")
+    first_name = models.CharField(null=True, blank=True, max_length=255)
+    last_name = models.CharField(null=True, blank=True, max_length=255)
 
     password_reset_token = models.CharField(null=True, blank=True)
     password_reset_token_expires_at = models.DateTimeField(null=True, blank=True)
+
+    username = models.CharField(_('username'), max_length=150, unique=True, blank=True, null=True)
 
     jti = models.CharField(
         _("jwt id"),
