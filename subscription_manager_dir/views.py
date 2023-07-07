@@ -41,12 +41,11 @@ def run_websocket():
             except Exception as e:
                 print(f"Error: {e}")
 
+    def on_error(ws, error):
+        return HttpResponse(error)
 
-
-
-
-
-
+    def on_close(ws, close_status_code, close_msg):
+        return HttpResponse(close_msg)
 
 
     # Create a WebSocket connection
@@ -55,10 +54,13 @@ def run_websocket():
 
     # Set the callback function for incoming messages
     ws.on_message = on_message
+    ws.on_error = on_error
+    ws.on_close = on_close
 
 
     # Start the WebSocket connection
     ws.run_forever()
+
 
 
 
@@ -75,4 +77,7 @@ async def main():
 # Disable SSL certificate verification if needed
 def receive_alert(request):
     # Run the asyncio event loop
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        print(e)
