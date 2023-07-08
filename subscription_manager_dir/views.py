@@ -42,15 +42,16 @@ def run_websocket():
                 print(f"Error: {e}")
 
     def on_error(ws, error):
-        return HttpResponse(error)
+        print(error)
 
     def on_close(ws, close_status_code, close_msg):
-        return HttpResponse(close_msg)
+        print(close_msg)
 
 
     # Create a WebSocket connection
+    websocket.enableTrace(True)
     host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
-    ws = websocket.WebSocketApp(host_name)
+    ws = websocket.WebSocketApp(f"wss://{host_name}/ws/fetch_new_alert/1a/")
 
     # Set the callback function for incoming messages
     ws.on_message = on_message
