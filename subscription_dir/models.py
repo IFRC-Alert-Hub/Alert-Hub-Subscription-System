@@ -1,5 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
+
 class Subscription(models.Model):
     id = models.AutoField(primary_key=True)
     subscription_name = models.CharField(default="", verbose_name="subscription_name")
