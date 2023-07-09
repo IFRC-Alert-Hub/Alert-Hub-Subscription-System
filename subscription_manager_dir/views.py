@@ -71,14 +71,16 @@ async def main():
     websocket_thread.start()
 
     # Run the asyncio event loop in the main thread
-    while True:
+    #while True:
         # Perform other asyncio-related tasks here if needed
-        await asyncio.sleep(1)
+        #await asyncio.sleep(1)
+
 # Create your views here.
 # Disable SSL certificate verification if needed
 def receive_alert(request):
     # Run the asyncio event loop
     try:
         asyncio.run(main())
+        return HttpResponse("Good!")
     except Exception as e:
         print(e)
