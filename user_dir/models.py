@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils.translation import gettext as _
+
+from user_dir.utils import generate_jti
 
 
 class CustomUserManager(BaseUserManager):
@@ -29,15 +32,20 @@ class CustomUser(AbstractUser):
     avatar = models.CharField(null=True, blank=True, max_length=255)
     country = models.CharField(null=True, blank=True, max_length=255)
     city = models.CharField(null=True, blank=True, max_length=255)
-    verified = models.BooleanField(default=False)
     username = models.CharField(null=True, unique=True, max_length=255, verbose_name="username")
 
-    email_verification_token = models.UUIDField(null=True, blank=True)
-    email_verification_token_expires_at = models.DateTimeField(null=True, blank=True)
-    password_reset_token = models.UUIDField(null=True, blank=True)
+    password_reset_token = models.CharField(null=True, blank=True)
     password_reset_token_expires_at = models.DateTimeField(null=True, blank=True)
-    email_reset_token = models.UUIDField(null=True, blank=True)
-    email_reset_token_expires_at = models.DateTimeField(null=True, blank=True)
+
+    jti = models.CharField(
+        _("jwt id"),
+        max_length=64,
+        blank=False,
+        null=False,
+        editable=False,
+        default=generate_jti,
+        help_text=_("JWT tokens for the user get revoked when JWT id has regenerated."),
+    )
 
     objects = CustomUserManager()
 

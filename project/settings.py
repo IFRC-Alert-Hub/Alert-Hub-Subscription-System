@@ -10,26 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Only for Local Development - Load environment variables from the .env file
-if 'WEBSITE_HOSTNAME' not in os.environ:
-    print("Loading environment variables for .env file")
-    load_dotenv('.env')
+# Load environment variables for .env file
+dotenv_file = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(BASE_DIR)
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', default=False)
 
 ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
-CSRF_TRUSTED_ORIGINS = ['https://' + os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
+CSRF_TRUSTED_ORIGINS = [
+    'https://' + os.environ['WEBSITE_HOSTNAME']] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # Application definition
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'graphene_django',
     'django_celery_results',
     'django_celery_beat',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -58,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -66,7 +70,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 GRAPHENE = {
-    "SCHEMA": "mysite.myschema.schema",
+    "SCHEMA": "user_dir.schema.schema",
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
@@ -169,3 +173,21 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'uclalert0@gmail.com'
 EMAIL_HOST_PASSWORD = 'lqlauyiauhrtvoif'
 DEFAULT_FROM_EMAIL = 'Celery <uclalert0@gmail.com>'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'verify_code',
+    }
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+GRAPHQL_JWT = {
+    "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
+    "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
+    "JWT_HIDE_TOKEN_FIELDS": True,
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
+}
