@@ -61,15 +61,15 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'user_dir.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    "user_dir.middleware.AuthenticationMiddleware",
-    "user_dir.middleware.MessageMiddleware",
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -190,6 +190,8 @@ CACHES = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
 
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
