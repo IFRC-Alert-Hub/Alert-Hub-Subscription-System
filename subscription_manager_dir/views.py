@@ -1,6 +1,13 @@
+import os
 import asyncio
+from .websocket_connection import establish_connection_thread
 from django.http import HttpResponse
-from websocket_connection import establish_connection_thread
+
+from .tasks import send_mail_fun
+
+def send_mail_to_all(request):
+    send_mail_fun.delay()
+    return HttpResponse("Sent")
 
 # Create your views here.
 # Disable SSL certificate verification if needed
