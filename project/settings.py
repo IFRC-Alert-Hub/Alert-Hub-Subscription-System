@@ -191,6 +191,8 @@ CACHES = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+CORS_ALLOW_CREDENTIALS = True
+
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
     "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
