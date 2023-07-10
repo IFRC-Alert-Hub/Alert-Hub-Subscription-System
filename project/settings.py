@@ -61,12 +61,12 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'user_dir.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    "user_dir.middleware.AuthenticationMiddleware",
+    "user_dir.middleware.MessageMiddleware",
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -196,8 +196,8 @@ GRAPHQL_JWT = {
     "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
     "JWT_HIDE_TOKEN_FIELDS": True,
     "JWT_VERIFY_EXPIRATION": True,
-    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
-    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
+    "JWT_EXPIRATION_DELTA": timedelta(days=30),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=30),
 }
 
 LOGGING = {

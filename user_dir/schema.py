@@ -30,8 +30,10 @@ class UserType(DjangoObjectType):
     class Meta:
         model = CustomUser
         fields = [
+            'id',
             'email',
-            'username',
+            'first_name',
+            'last_name',
             'phoneNumber',
             'avatar',
             'country',
@@ -281,21 +283,18 @@ class UpdateProfile(graphene.Mutation):
     errors = graphene.Field(ErrorType)
 
     class Arguments:
-        username = graphene.String(default_value=None)
+        first_name = graphene.String(default_value=None)
+        last_name = graphene.String(default_value=None)
         country = graphene.String(default_value=None)
         city = graphene.String(default_value=None)
         avatar = graphene.String(default_value=None)
 
     @login_required
-    def mutate(self, info, username, country, city, avatar):
+    def mutate(self, info, first_name, last_name, country, city, avatar):
         user = info.context.user
 
-        if CustomUser.objects.filter(username__iexact=username).exclude(
-                pk=user.pk).exists() and username:
-            errors = ErrorType(userName='usernameAlreadyExists')
-            return UpdateProfile(success=False, errors=errors)
-
-        user.username = username
+        user.first_name = first_name
+        user.last_name = last_name
         user.country = country
         user.city = city
         user.avatar = avatar
