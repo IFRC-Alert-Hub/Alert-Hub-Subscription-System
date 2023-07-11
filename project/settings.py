@@ -196,7 +196,7 @@ CORS_ALLOW_CREDENTIALS = True
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
     "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
-    "JWT_HIDE_TOKEN_FIELDS": True,
+    "JWT_HIDE_TOKEN_FIELDS": False,
     "JWT_VERIFY_EXPIRATION": True,
     "JWT_EXPIRATION_DELTA": timedelta(days=30),
     "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=30),

@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import graphene
 import graphql_jwt
+from django.views.decorators.csrf import csrf_exempt
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
 
@@ -44,6 +45,7 @@ class UserType(DjangoObjectType):
 class Query(graphene.ObjectType):
     profile = graphene.Field(UserType)
 
+    @csrf_exempt
     @login_required
     def resolve_profile(self, info, **kwargs):
         if info.context.user.is_authenticated:
