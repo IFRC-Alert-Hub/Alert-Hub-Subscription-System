@@ -26,6 +26,10 @@ class Command(BaseCommand):
                 return "The connection is closed!"
             except TimeoutError:
                 print("This connection is timeout, retry the connection....")
+            except ConnectionRefusedError:
+                print("The connection is refused, retry the connection....")
+            except ConnectionAbortedError:
+                print("The connection is aborted, retry the connection....")
 
     def handle_interrupt(self, signum, frame):
         # Clean up tasks (if needed)
