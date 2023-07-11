@@ -200,6 +200,7 @@ GRAPHQL_JWT = {
     "JWT_VERIFY_EXPIRATION": True,
     "JWT_EXPIRATION_DELTA": timedelta(days=30),
     "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=30),
+    "JWT_COOKIE_SAMESITE": "None",
     "JWT_COOKIE_DOMAIN": '.azurewebsites.net',
 }
 
