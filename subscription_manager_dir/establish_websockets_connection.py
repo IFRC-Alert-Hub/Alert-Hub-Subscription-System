@@ -15,7 +15,7 @@ class WebsocketConnection:
     def __init__(self):
         self.websocket = None
     @sync_to_async
-    def filter_subscription(alert_map):
+    def filter_subscription(self, alert_map):
         return list(Subscription.objects.filter(
             country_ids__contains=[alert_map["country_id"]],
             urgency_array__contains=[alert_map["urgency"]],
@@ -47,10 +47,6 @@ class WebsocketConnection:
 
     async def establish_websocket_connect(self):
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
-        # Enable trace logs
-        logger = logging.getLogger('websockets')
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(logging.StreamHandler())
         # Connect to the WebSocket server
         async with websockets.connect(f'wss://{host_name}/ws/fetch_new_alert/1a/',
                                   origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
