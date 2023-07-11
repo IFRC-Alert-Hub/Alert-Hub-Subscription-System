@@ -182,7 +182,15 @@ CACHES = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
     "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
