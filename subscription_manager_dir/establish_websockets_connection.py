@@ -9,10 +9,7 @@ from subscription_dir.models import Subscription
 from asgiref.sync import sync_to_async
 from .tasks import send_subscription_email
 
-# Enable trace logs
-logger = logging.getLogger('websockets')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
+
 
 class WebsocketConnection:
     def __init__(self):
@@ -50,6 +47,10 @@ class WebsocketConnection:
 
     async def establish_websocket_connect(self):
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
+        # Enable trace logs
+        logger = logging.getLogger('websockets')
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(logging.StreamHandler())
         # Connect to the WebSocket server
         async with websockets.connect(f'wss://{host_name}/ws/fetch_new_alert/1a/',
                                   origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
