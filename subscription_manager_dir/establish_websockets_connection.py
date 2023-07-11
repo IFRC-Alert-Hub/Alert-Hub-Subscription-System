@@ -51,7 +51,7 @@ class WebsocketConnection:
     async def establish_websocket_connect(self):
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
         # Connect to the WebSocket server
-        async with websockets.connect(f'ws://{host_name}/ws/fetch_new_alert/1a/',
+        async with websockets.connect(f'wss://{host_name}/ws/fetch_new_alert/1a/',
                                   origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
             self.websocket = websocket
             while True:
