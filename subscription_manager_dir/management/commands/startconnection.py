@@ -22,7 +22,7 @@ class Command(BaseCommand):
                     WebsocketConnection.establish_websocket_connect())
                 break
             except KeyboardInterrupt:  # pylint: disable=broad-except
-                WebsocketConnection.websocket.close()
+                asyncio.ensure_future(WebsocketConnection.websocket.close())
                 return "The connection is closed!"
             except TimeoutError:
                 print("This connection is timeout, retry the connection....")
