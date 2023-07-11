@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import graphene
 import graphql_jwt
+from django.views.decorators.csrf import csrf_exempt
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
 
@@ -44,6 +45,7 @@ class UserType(DjangoObjectType):
 class Query(graphene.ObjectType):
     profile = graphene.Field(UserType)
 
+    @csrf_exempt
     @login_required
     def resolve_profile(self, info, **kwargs):
         if info.context.user.is_authenticated:
@@ -62,6 +64,7 @@ class Register(graphene.Mutation):
         password = graphene.String(required=True)
         verify_code = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email, password, verify_code):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -97,6 +100,7 @@ class SendVerifyEmail(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -332,6 +336,7 @@ class ResetPassword(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         try:
             user = CustomUser.objects.get(email=email)
@@ -364,6 +369,7 @@ class ResetPasswordConfirm(graphene.Mutation):
         verifyCode = graphene.String(required=True)
         password = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, verify_code, password):
         # Check if the token is empty
         if not verify_code:
