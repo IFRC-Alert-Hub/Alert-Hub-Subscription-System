@@ -57,6 +57,6 @@ async def establish_websocket_connect():
                 message = await websocket.recv()
                 await process_incoming_alert(message=message)
             except Exception as e:
-                print(e)
+                print("Websocket Closed")
                 await websocket.close()
                 break
