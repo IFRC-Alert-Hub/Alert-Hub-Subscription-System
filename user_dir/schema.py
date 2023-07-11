@@ -64,6 +64,7 @@ class Register(graphene.Mutation):
         password = graphene.String(required=True)
         verify_code = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email, password, verify_code):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -99,6 +100,7 @@ class SendVerifyEmail(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -334,6 +336,7 @@ class ResetPassword(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         try:
             user = CustomUser.objects.get(email=email)
@@ -366,6 +369,7 @@ class ResetPasswordConfirm(graphene.Mutation):
         verifyCode = graphene.String(required=True)
         password = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, verify_code, password):
         # Check if the token is empty
         if not verify_code:
