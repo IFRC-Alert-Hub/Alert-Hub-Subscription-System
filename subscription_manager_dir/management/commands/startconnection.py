@@ -21,9 +21,11 @@ class Command(BaseCommand):
                 asyncio.get_event_loop().run_until_complete(
                     WebsocketConnection.establish_websocket_connect())
                 break
-            except KeyboardInterrupt as general_exception:  # pylint: disable=broad-except
+            except KeyboardInterrupt:  # pylint: disable=broad-except
                 WebsocketConnection.websocket.close()
                 return "The connection is closed!"
+            except TimeoutError:
+                print("This connection is timeout, retry the connection....")
 
     def handle_interrupt(self, signum, frame):
         # Clean up tasks (if needed)
