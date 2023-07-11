@@ -1,6 +1,6 @@
 import os
 import asyncio
-from .websocket_connection import establish_connection_thread
+from .old_websocket_connection import establish_connection_thread
 from django.http import HttpResponse
 
 from .tasks import send_mail_fun

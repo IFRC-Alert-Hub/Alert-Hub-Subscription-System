@@ -12,7 +12,7 @@ from .tasks import send_subscription_email
 
 
 def run_websocket():
-    def on_message(web_socket, message):
+    def on_message(message):
         # Process the received alert
         alert_map = json.loads(message)["message"]
         print(alert_map)
@@ -37,10 +37,10 @@ def run_websocket():
             except Exception as general_exception: # pylint: disable=broad-except
                 print(f"Error: {general_exception}")
 
-    def on_error(web_socket, error):
+    def on_error(error):
         print(error)
 
-    def on_close(web_socket, close_status_code, close_msg):
+    def on_close(close_status_code, close_msg):
         print(close_msg)
 
     # Create a WebSocket connection
