@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'subscription_dir',
     'sample_dir',
     'user_dir',
-    'subscription_manager_dir.apps.SubscriptionManagerConfig',
+    'subscription_manager_dir',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
