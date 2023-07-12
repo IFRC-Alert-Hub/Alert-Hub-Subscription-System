@@ -1,12 +1,11 @@
 import json
 from unittest.mock import patch
 from graphene_django.utils.testing import GraphQLTestCase
-from django.test import TestCase
 from django.test import Client
 from django.contrib.auth import get_user_model
 
 
-class TestCase(GraphQLTestCase):
+class APITestCase(GraphQLTestCase):
     GRAPHQL_URL = "/users/graphql"
     client = Client()
 
@@ -14,8 +13,8 @@ class TestCase(GraphQLTestCase):
     @classmethod
     def setUpTestData(cls):
         # Create a test user
-        User = get_user_model()
-        cls.user = User.objects.create_user(email='test@example.com', password='testpassword')
+        user_model = get_user_model()
+        cls.user = user_model.objects.create_user(email='test@example.com', password='testpassword')
 
     def setUp(self):
         # Log in the user
@@ -35,7 +34,7 @@ class TestCase(GraphQLTestCase):
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
-        self.assertEquals(content['data']['profile']['email'], self.user.email)
+        self.assertEqual(content['data']['profile']['email'], self.user.email)
 
     # Test the register mutation
     @patch('django.core.cache.cache.set')
@@ -53,21 +52,12 @@ class TestCase(GraphQLTestCase):
         cache[cache_key] = verify_code
 
         mock_cache_set.side_effect = lambda key, value, timeout: cache.update({key: value})
-        mock_cache_get.side_effect = lambda key: cache.get(key)
+        mock_cache_get.side_effect = cache.get
 
         # Test the register mutation
         response = self.query(
-            '''
-            mutation {
-                register(email: "newuser@example.com", password: "newpassword", verifyCode: "123456") {
-                    success
-                    errors {
-                        email
-                        verifyCode
-                    }
-                }
-            }
-            '''
+            '''mutation { register(email: "newuser@example.com", password: "newpassword", 
+            verifyCode: "123456") { success errors { email verifyCode } } }'''
         )
         content = json.loads(response.content)
         self.assertResponseNoErrors(response)
@@ -75,5 +65,3 @@ class TestCase(GraphQLTestCase):
         # Check that registration was successful
         self.assertTrue(content['data']['register']['success'])
         self.assertIsNone(content['data']['register']['errors'])
-
-
