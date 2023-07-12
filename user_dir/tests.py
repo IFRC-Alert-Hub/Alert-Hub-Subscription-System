@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 
 class TestCase(GraphQLTestCase):
-    GRAPHQL_URL = "/users/graphql/"
+    GRAPHQL_URL = "/users/graphql"
     client = Client()
 
     # Setup data for the tests
