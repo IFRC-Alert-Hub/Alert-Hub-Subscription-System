@@ -5,12 +5,12 @@ from uuid import uuid4
 
 import graphene
 import graphql_jwt
-from django.views.decorators.csrf import csrf_exempt
 from graphql_jwt.decorators import login_required
 from graphene_django import DjangoObjectType
 
 from django.utils import timezone
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import CustomUser
 from .tasks import send_email
