@@ -92,10 +92,10 @@ class Query(graphene.ObjectType):
                                       subscription_id=graphene.Int())
 
     def resolve_list_all_subscription(self, info):
-        return Subscription.objects.all()
+        return Subscription.objects.all().order_by('-id')
 
     def resolve_list_subscription_by_user_id(self, info, user_id):
-        return Subscription.objects.filter(user_id=user_id)
+        return Subscription.objects.filter(user_id=user_id).order_by('-id')
 
     def resolve_list_subscription(self, info, country_ids, urgency_array, severity_array,
                                   certainty_array):
