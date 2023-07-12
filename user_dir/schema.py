@@ -6,6 +6,7 @@ from uuid import uuid4
 import graphene
 import graphql_jwt
 from graphql_jwt.decorators import login_required
+from graphql_jwt.settings import jwt_settings
 from graphene_django import DjangoObjectType
 
 from django.utils import timezone
@@ -306,25 +307,30 @@ class UpdateProfile(graphene.Mutation):
         return UpdateProfile(success=True)
 
 
-# class Logout(graphene.Mutation):
-#     id = graphene.ID()
-#     success = graphene.Boolean()
-#     errors = graphene.Field(ErrorType)
-#
-#     @classmethod
-#     def mutate(cls, root, info, **kwargs):
-#         try:
-#             user = info.context.user
-#             if not user.is_authenticated:
-#                 errors = ErrorType(user="User not authenticated.")
-#                 return cls(success=False, errors=errors)
-#
-#             user.jti = generate_jti()
-#             user.save()
-#
-#             return cls(id=user.id, success=True)
-#         except AttributeError as error:
-#             return cls(success=False, errors=str(error))
+class Logout(graphene.Mutation):
+    success = graphene.Boolean()
+    errors = graphene.Field(ErrorType)
+
+    @classmethod
+    def mutate(cls, root, info, **kwargs):
+        try:
+            user = info.context.user
+            if not user.is_authenticated:
+                errors = ErrorType(user="User not authenticated.")
+                return cls(success=False, errors=errors)
+
+            user.jti = generate_jti()
+            user.save()
+
+            context = info.context
+            context.delete_jwt_cookie = (
+                    jwt_settings.JWT_COOKIE_NAME in context.COOKIES
+                    and getattr(context, "jwt_cookie", False)
+            )
+
+            return cls(success=True)
+        except AttributeError as error:
+            return cls(success=False, errors=str(error))
 
 
 class ResetPassword(graphene.Mutation):
@@ -403,7 +409,7 @@ class Mutation(graphene.ObjectType):
     refresh_token = graphql_jwt.Refresh.Field()
     update_profile = UpdateProfile.Field()
 
-    logout = graphql_jwt.DeleteJSONWebTokenCookie.Field()
+    logout = Logout.Field()
 
     # logout = Logout.Field()
     reset_password = ResetPassword.Field()
