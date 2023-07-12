@@ -52,7 +52,6 @@ class TestCase(GraphQLTestCase):
         cache_key = f'{email}_register'
         cache[cache_key] = verify_code
 
-        # Mock cache.set and cache.get to use the temporary "cache"
         mock_cache_set.side_effect = lambda key, value, timeout: cache.update({key: value})
         mock_cache_get.side_effect = lambda key: cache.get(key)
 

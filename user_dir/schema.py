@@ -306,25 +306,25 @@ class UpdateProfile(graphene.Mutation):
         return UpdateProfile(success=True)
 
 
-class Logout(graphene.Mutation):
-    id = graphene.ID()
-    success = graphene.Boolean()
-    errors = graphene.Field(ErrorType)
-
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
-        try:
-            user = info.context.user
-            if not user.is_authenticated:
-                errors = ErrorType(user="User not authenticated.")
-                return cls(success=False, errors=errors)
-
-            user.jti = generate_jti()
-            user.save()
-
-            return cls(id=user.id, success=True)
-        except AttributeError as error:
-            return cls(success=False, errors=str(error))
+# class Logout(graphene.Mutation):
+#     id = graphene.ID()
+#     success = graphene.Boolean()
+#     errors = graphene.Field(ErrorType)
+#
+#     @classmethod
+#     def mutate(cls, root, info, **kwargs):
+#         try:
+#             user = info.context.user
+#             if not user.is_authenticated:
+#                 errors = ErrorType(user="User not authenticated.")
+#                 return cls(success=False, errors=errors)
+#
+#             user.jti = generate_jti()
+#             user.save()
+#
+#             return cls(id=user.id, success=True)
+#         except AttributeError as error:
+#             return cls(success=False, errors=str(error))
 
 
 class ResetPassword(graphene.Mutation):
@@ -403,7 +403,9 @@ class Mutation(graphene.ObjectType):
     refresh_token = graphql_jwt.Refresh.Field()
     update_profile = UpdateProfile.Field()
 
-    logout = Logout.Field()
+    logout = graphql_jwt.DeleteJSONWebTokenCookie.Field()
+
+    # logout = Logout.Field()
     reset_password = ResetPassword.Field()
     reset_password_confirm = ResetPasswordConfirm.Field()
     reset_email = ResetEmail.Field()
