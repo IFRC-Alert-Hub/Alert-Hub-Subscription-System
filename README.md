@@ -68,15 +68,12 @@ python manage.py collectstatics
 
 5. Configure the postgreSQL database, the rabbitmq server and the websocket
 
-
 6. Start the server:
-
 ```bash
 python manage.py runserver
 ```
 
 7. Start celery worker and sceduler:
-
 ```bash
 celery -A project worker -l info --pool=solo
 celery -A project beat -l info
