@@ -2,9 +2,9 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev_yx" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev_yx" ]
 
 jobs:
   build:
@@ -44,4 +44,6 @@ jobs:
         pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
     - name: Run Tests with coverage
       run: |
-        python manage.py test
+        pip install coverage
+        coverage run manage.py test
+        coverage report
