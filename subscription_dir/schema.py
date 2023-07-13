@@ -11,6 +11,19 @@ class SubscriptionType(DjangoObjectType):
                   "urgency_array", "severity_array", "certainty_array", "subscribe_by"]
 
 
+def create_subscription(user_id, subscription_name, country_ids,
+                        urgency_array, severity_array, certainty_array, subscribe_by):
+    subscription = Subscription(user_id=user_id,
+                                subscription_name=subscription_name,
+                                country_ids=country_ids,
+                                urgency_array=urgency_array,
+                                severity_array=severity_array,
+                                certainty_array=certainty_array,
+                                subscribe_by=subscribe_by)
+    subscription.save()
+    return subscription
+
+
 class CreateSubscription(graphene.Mutation):
     class Arguments:
         subscription_name = graphene.String(required=True)
@@ -25,14 +38,13 @@ class CreateSubscription(graphene.Mutation):
     @login_required
     def mutate(self, info, subscription_name, country_ids,
                urgency_array, severity_array, certainty_array, subscribe_by):
-        subscription = Subscription(user_id=info.context.user.id,
-                                    subscription_name=subscription_name,
-                                    country_ids=country_ids,
-                                    urgency_array=urgency_array,
-                                    severity_array=severity_array,
-                                    certainty_array=certainty_array,
-                                    subscribe_by=subscribe_by)
-        subscription.save()
+        subscription = create_subscription(info.context.user.id,
+                                           subscription_name,
+                                           country_ids,
+                                           urgency_array,
+                                           severity_array,
+                                           certainty_array,
+                                           subscribe_by)
         return CreateSubscription(subscription=subscription)
 
 
