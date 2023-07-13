@@ -1,19 +1,14 @@
-import asyncio
 import json
-import signal
-
-import websockets
-import os
 import logging
+import os
 
-
-from asgiref.sync import sync_to_async
-from .tasks import send_subscription_email
 from websockets.sync.client import connect
+from .tasks import send_subscription_email
 
 
 class WebsocketConnection:
     connected = False
+
     def __init__(self):
         self.websocket = None
         # Configure logging settings
@@ -31,12 +26,10 @@ class WebsocketConnection:
             certainty_array__contains=[alert_map["certainty"]]
         ))
 
-
     def process_incoming_alert(self, message):
         alert_map = json.loads(message)["message"]
         print(alert_map)
         matched_subscriptions = self.filter_subscription(alert_map)
-
 
         for subscription in matched_subscriptions:
             context = {
@@ -47,11 +40,10 @@ class WebsocketConnection:
             }
             try:
                 send_subscription_email.delay(subscription.user_id,
-                                          'New Alerts Matching Your Subscription',
-                                          'subscription_email.html', context)
+                                              'New Alerts Matching Your Subscription',
+                                              'subscription_email.html', context)
             except Exception as general_exception:  # pylint: disable=broad-except
                 print(f"Error: {general_exception}")
-
 
     @classmethod
     def isConnected(cls, bool):
@@ -68,14 +60,14 @@ class WebsocketConnection:
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
         # Connect to the WebSocket server
         with connect(f'{host_name}/ws/fetch_new_alert/1a/',
-                                  origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
+                     origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
             WebsocketConnection.isConnected(True)
             self.websocket = websocket
             self.logger.info("Connection Established!")
             while True:
-                    message = websocket.recv()
-                    self.process_incoming_alert(message=message)
-
+                message = websocket.recv()
+                self.logger.info("Received: " + message)
+                self.process_incoming_alert(message=message)
 
     def close_connection(self):
         if self.websocket:

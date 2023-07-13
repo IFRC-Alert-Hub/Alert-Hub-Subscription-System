@@ -1,7 +1,6 @@
 import threading
 
-import websockets
-from websockets.exceptions import ConnectionClosedOK,InvalidStatus
+from websockets.exceptions import ConnectionClosedOK, InvalidStatus
 
 from subscription_manager_dir.establish_websockets_connection import WebsocketConnection
 
@@ -23,16 +22,20 @@ class WebsocketThread(threading.Thread):
                 self.websocket_connection.logger.info("The connection is closed!")
                 break
             except TimeoutError:
-                self.websocket_connection.logger.info("This connection is timeout, retry the connection....")
+                self.websocket_connection.logger.info(
+                    "This connection is timeout, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionRefusedError:
-                self.websocket_connection.logger.info("The connection is refused, retry the connection....")
+                self.websocket_connection.logger.info(
+                    "The connection is refused, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionAbortedError:
-                self.websocket_connection.logger.info("The connection is aborted, retry the connection....")
+                self.websocket_connection.logger.info(
+                    "The connection is aborted, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except InvalidStatus:
-                self.websocket_connection.logger.info("The connection is rejected, retry the connection....")
+                self.websocket_connection.logger.info(
+                    "The connection is rejected, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionClosedOK:
                 self.websocket_connection.logger.info("The connection is successfully closed.")

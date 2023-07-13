@@ -3,20 +3,20 @@ import signal
 import threading
 
 from django.apps import AppConfig
-from django.core import management
-
 from subscription_manager_dir.WebsocketThread import WebsocketThread
+
+
 class SubscriptionManagerConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'subscription_manager_dir'
     connected = False
 
     @classmethod
-    def isConnected(cls):
+    def is_connected(cls):
         cls.connected = True
 
     @classmethod
-    def checkConnected(cls):
+    def check_connected(cls):
         return cls.connected
 
     def ready(self):
@@ -31,5 +31,3 @@ class SubscriptionManagerConfig(AppConfig):
 
     def shutdown(self, signum, frame):
         self.websocket_thread.shutdown()
-
-

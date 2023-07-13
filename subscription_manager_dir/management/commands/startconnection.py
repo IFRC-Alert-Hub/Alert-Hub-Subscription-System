@@ -1,13 +1,6 @@
-import asyncio
-import signal
-import sys
-import threading
-
-import websockets.exceptions
-from django.core.management.base import BaseCommand, CommandError
 import os
-from django.http import HttpResponse
-
+import signal
+from django.core.management.base import BaseCommand
 from subscription_manager_dir.WebsocketThread import WebsocketThread
 
 
@@ -22,4 +15,3 @@ class Command(BaseCommand):
 
     def shutdown(self, signum, frame):
         self.websocket_thread.shutdown()
-
