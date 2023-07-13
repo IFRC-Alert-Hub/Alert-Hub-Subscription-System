@@ -21,6 +21,10 @@ load_dotenv(dotenv_file)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -35,10 +39,10 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'subscription_manager_dir',
     'subscription_dir',
     'filter',
     'user_dir',
-    'subscription_manager_dir',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,15 +57,15 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'user_dir.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'user_dir.middleware.AuthenticationMiddleware',
+    'user_dir.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -113,8 +117,23 @@ DATABASES = {
         'HOST': conn_str_params['host'],
         'USER': conn_str_params['user'],
         'PASSWORD': conn_str_params['password'],
+        'TEST': {
+            'NAME': 'test',
+        },
     }
 }
+
+if os.environ.get('GITHUB_WORKFLOW'):
+    DATABASES = {
+        'default': {
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'github_actions',
+           'USER': 'postgres',
+           'PASSWORD': 'postgres',
+           'HOST': '127.0.0.1',
+           'PORT': '5432',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -183,21 +202,17 @@ CACHES = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+CORS_ALLOW_CREDENTIALS = True
 
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_HANDLER": "user_dir.utils.jwt_payload",
     "JWT_DECODE_HANDLER": "user_dir.utils.jwt_decode",
     "JWT_HIDE_TOKEN_FIELDS": True,
     "JWT_VERIFY_EXPIRATION": True,
-    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
-    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=7),
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=1),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=30),
+    "JWT_COOKIE_SAMESITE": "None",
+    "JWT_COOKIE_SECURE": True,
 }
 
 LOGGING = {

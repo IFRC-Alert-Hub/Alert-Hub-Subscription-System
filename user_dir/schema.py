@@ -6,10 +6,12 @@ from uuid import uuid4
 import graphene
 import graphql_jwt
 from graphql_jwt.decorators import login_required
+from graphql_jwt.settings import jwt_settings
 from graphene_django import DjangoObjectType
 
 from django.utils import timezone
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import CustomUser
 from .tasks import send_email
@@ -30,8 +32,10 @@ class UserType(DjangoObjectType):
     class Meta:
         model = CustomUser
         fields = [
+            'id',
             'email',
-            'username',
+            'first_name',
+            'last_name',
             'phoneNumber',
             'avatar',
             'country',
@@ -42,6 +46,7 @@ class UserType(DjangoObjectType):
 class Query(graphene.ObjectType):
     profile = graphene.Field(UserType)
 
+    @csrf_exempt
     @login_required
     def resolve_profile(self, info, **kwargs):
         if info.context.user.is_authenticated:
@@ -60,6 +65,7 @@ class Register(graphene.Mutation):
         password = graphene.String(required=True)
         verify_code = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email, password, verify_code):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -95,6 +101,7 @@ class SendVerifyEmail(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         if CustomUser.objects.filter(email__iexact=email).exists():
             errors = ErrorType(email='Email already exists.')
@@ -281,21 +288,18 @@ class UpdateProfile(graphene.Mutation):
     errors = graphene.Field(ErrorType)
 
     class Arguments:
-        username = graphene.String(default_value=None)
+        first_name = graphene.String(default_value=None)
+        last_name = graphene.String(default_value=None)
         country = graphene.String(default_value=None)
         city = graphene.String(default_value=None)
         avatar = graphene.String(default_value=None)
 
     @login_required
-    def mutate(self, info, username, country, city, avatar):
+    def mutate(self, info, first_name, last_name, country, city, avatar):
         user = info.context.user
 
-        if CustomUser.objects.filter(username__iexact=username).exclude(
-                pk=user.pk).exists() and username:
-            errors = ErrorType(userName='usernameAlreadyExists')
-            return UpdateProfile(success=False, errors=errors)
-
-        user.username = username
+        user.first_name = first_name
+        user.last_name = last_name
         user.country = country
         user.city = city
         user.avatar = avatar
@@ -304,7 +308,6 @@ class UpdateProfile(graphene.Mutation):
 
 
 class Logout(graphene.Mutation):
-    id = graphene.ID()
     success = graphene.Boolean()
     errors = graphene.Field(ErrorType)
 
@@ -319,7 +322,13 @@ class Logout(graphene.Mutation):
             user.jti = generate_jti()
             user.save()
 
-            return cls(id=user.id, success=True)
+            context = info.context
+            context.delete_jwt_cookie = (
+                    jwt_settings.JWT_COOKIE_NAME in context.COOKIES
+                    and getattr(context, "jwt_cookie", False)
+            )
+
+            return cls(success=True)
         except AttributeError as error:
             return cls(success=False, errors=str(error))
 
@@ -333,6 +342,7 @@ class ResetPassword(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, email):
         try:
             user = CustomUser.objects.get(email=email)
@@ -365,6 +375,7 @@ class ResetPasswordConfirm(graphene.Mutation):
         verifyCode = graphene.String(required=True)
         password = graphene.String(required=True)
 
+    @csrf_exempt
     def mutate(self, info, verify_code, password):
         # Check if the token is empty
         if not verify_code:
@@ -399,6 +410,8 @@ class Mutation(graphene.ObjectType):
     update_profile = UpdateProfile.Field()
 
     logout = Logout.Field()
+
+    # logout = Logout.Field()
     reset_password = ResetPassword.Field()
     reset_password_confirm = ResetPasswordConfirm.Field()
     reset_email = ResetEmail.Field()
