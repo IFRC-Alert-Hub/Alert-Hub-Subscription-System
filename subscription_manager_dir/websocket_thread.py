@@ -24,22 +24,22 @@ class WebsocketThread(threading.Thread):
             except TimeoutError:
                 self.websocket_connection.logger.info(
                     "This connection is timeout, retry the connection....")
-                WebsocketConnection.isConnected(False)
+                WebsocketConnection.is_connected(False)
             except ConnectionRefusedError:
                 self.websocket_connection.logger.info(
                     "The connection is refused, retry the connection....")
-                WebsocketConnection.isConnected(False)
+                WebsocketConnection.is_connected(False)
             except ConnectionAbortedError:
                 self.websocket_connection.logger.info(
                     "The connection is aborted, retry the connection....")
-                WebsocketConnection.isConnected(False)
+                WebsocketConnection.is_connected(False)
             except InvalidStatus:
                 self.websocket_connection.logger.info(
                     "The connection is rejected, retry the connection....")
-                WebsocketConnection.isConnected(False)
+                WebsocketConnection.is_connected(False)
             except ConnectionClosedOK:
                 self.websocket_connection.logger.info("The connection is successfully closed.")
-                WebsocketConnection.isConnected(False)
+                WebsocketConnection.is_connected(False)
                 break
             except ConnectionError:
                 self.websocket_connection.logger.info("The connection is rejected.")
@@ -53,7 +53,7 @@ class WebsocketThread(threading.Thread):
         super().join(timeout)
 
     def shutdown(self):
-        if self.websocket_connection.checkConnected():
+        if self.websocket_connection.check_connected():
             print("Shutting down WebSocket connection...")
             self.websocket_connection.close_connection()
             self.stop()

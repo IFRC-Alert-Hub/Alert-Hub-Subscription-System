@@ -1,7 +1,7 @@
 import os
 import signal
 from django.core.management.base import BaseCommand
-from subscription_manager_dir.WebsocketThread import WebsocketThread
+from subscription_manager_dir.websocket_thread import WebsocketThread
 
 
 class Command(BaseCommand):

@@ -1,5 +1,5 @@
 #Looking this file for old info
-'''
+"""
 import os
 import threading
 import json
@@ -69,5 +69,4 @@ async def establish_connection_thread():
     # Perform other asyncio-related tasks here if needed
     # await asyncio.sleep(1)
 
-'''
-
+"""

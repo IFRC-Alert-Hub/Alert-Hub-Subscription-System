@@ -46,22 +46,22 @@ class WebsocketConnection:
                 print(f"Error: {general_exception}")
 
     @classmethod
-    def isConnected(cls, bool):
-        cls.connected = bool
+    def is_connected(cls, flag):
+        cls.connected = flag
 
     @classmethod
-    def checkConnected(cls):
+    def check_connected(cls):
         return cls.connected
 
     def establish_websocket_connection(self):
-        if WebsocketConnection.checkConnected():
+        if WebsocketConnection.check_connected():
             self.logger.info("The websocket connection is already established!")
             return None
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
         # Connect to the WebSocket server
         with connect(f'{host_name}/ws/fetch_new_alert/1a/',
                      origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
-            WebsocketConnection.isConnected(True)
+            WebsocketConnection.is_connected(True)
             self.websocket = websocket
             self.logger.info("Connection Established!")
             while True:
@@ -71,5 +71,5 @@ class WebsocketConnection:
 
     def close_connection(self):
         if self.websocket:
-            self.isConnected(False)
+            self.is_connected(False)
             self.websocket.close()

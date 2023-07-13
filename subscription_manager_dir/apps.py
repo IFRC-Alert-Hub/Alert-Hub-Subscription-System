@@ -3,7 +3,7 @@ import signal
 import threading
 
 from django.apps import AppConfig
-from subscription_manager_dir.WebsocketThread import WebsocketThread
+from subscription_manager_dir.websocket_thread import WebsocketThread
 
 
 class SubscriptionManagerConfig(AppConfig):
@@ -24,7 +24,7 @@ class SubscriptionManagerConfig(AppConfig):
             current_thread = threading.current_thread()
             thread_name = current_thread.name
             thread_id = current_thread.ident
-            print("Current Thread: Name={}, ID={}".format(thread_name, thread_id))
+            print(f"Current Thread: Name={thread_name}, ID={thread_id}")
             signal.signal(signal.SIGINT, self.shutdown)
             self.websocket_thread = WebsocketThread()
             self.websocket_thread.start()
