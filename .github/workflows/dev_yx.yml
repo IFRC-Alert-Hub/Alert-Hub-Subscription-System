@@ -46,7 +46,4 @@ jobs:
       run: |
         pip install coverage
         coverage run manage.py test
-    - name: Upload coverage to Codecov
-      run: |
-        pip install codecov
-        codecov
+        coverage report
