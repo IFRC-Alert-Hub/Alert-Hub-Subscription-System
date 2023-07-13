@@ -1,5 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
+from graphql_jwt.decorators import login_required
 from .models import Subscription
 
 
@@ -12,7 +13,6 @@ class SubscriptionType(DjangoObjectType):
 
 class CreateSubscription(graphene.Mutation):
     class Arguments:
-        user_id = graphene.Int(required=True)
         subscription_name = graphene.String(required=True)
         country_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
@@ -22,9 +22,10 @@ class CreateSubscription(graphene.Mutation):
 
     subscription = graphene.Field(SubscriptionType)
 
-    def mutate(self, info, subscription_name, user_id, country_ids,
+    @login_required
+    def mutate(self, info, subscription_name, country_ids,
                urgency_array, severity_array, certainty_array, subscribe_by):
-        subscription = Subscription(user_id=user_id,
+        subscription = Subscription(user_id=info.context.user.id,
                                     subscription_name=subscription_name,
                                     country_ids=country_ids,
                                     urgency_array=urgency_array,
@@ -36,41 +37,54 @@ class CreateSubscription(graphene.Mutation):
 
 
 class DeleteSubscription(graphene.Mutation):
+
     class Arguments:
         subscription_id = graphene.Int(required=True)
 
-    subscription = graphene.Field(SubscriptionType)
+    success = graphene.Boolean()
+    error_message = graphene.String()
 
+    @login_required
     def mutate(self, info, subscription_id):
         subscription = Subscription.objects.get(id=subscription_id)
+        login_user_id = info.context.user.id
+        if subscription.user_id != login_user_id:
+            return DeleteSubscription(success=False,
+                                      error_message='Delete operation is not authorized '
+                                                    'to this user.')
         subscription.delete()
+        return DeleteSubscription(success=True)
 
 
 class UpdateSubscription(graphene.Mutation):
     class Arguments:
         subscription_id = graphene.Int(required=True)
         subscription_name = graphene.String(required=True)
-        user_id = graphene.Int(required=True)
         country_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
         severity_array = graphene.List(graphene.String)
         certainty_array = graphene.List(graphene.String)
         subscribe_by = graphene.List(graphene.String)
 
-    subscription = graphene.Field(SubscriptionType)
+    success = graphene.Boolean()
+    error_message = graphene.String()
 
-    def mutate(self, info, subscription_id, subscription_name, user_id, country_ids,
+    def mutate(self, info, subscription_id, subscription_name, country_ids,
                urgency_array, severity_array, certainty_array, subscribe_by):
         subscription = Subscription.objects.get(id=subscription_id)
+        login_user_id = info.context.user.id
+        if subscription.user_id != login_user_id:
+            return UpdateSubscription(success=False,
+                                      error_message='Update operation is not authorized '
+                                                    'to this user.')
         subscription.subscription_name = subscription_name
-        subscription.user_id = user_id
         subscription.country_ids = country_ids
         subscription.urgency_array = urgency_array
         subscription.severity_array = severity_array
         subscription.certainty_array = certainty_array
         subscription.subscribe_by = subscribe_by
         subscription.save()
-        return UpdateSubscription(subscription=subscription)
+        return UpdateSubscription(success=True)
 
 
 class Mutation(graphene.ObjectType):
@@ -81,8 +95,6 @@ class Mutation(graphene.ObjectType):
 
 class Query(graphene.ObjectType):
     list_all_subscription = graphene.List(SubscriptionType)
-    list_subscription_by_user_id = graphene.List(SubscriptionType,
-                                                 user_id=graphene.Int())
     list_subscription = graphene.List(SubscriptionType,
                                       country_ids=graphene.List(graphene.Int),
                                       urgency_array=graphene.List(graphene.String),
@@ -91,11 +103,10 @@ class Query(graphene.ObjectType):
     get_subscription = graphene.Field(SubscriptionType,
                                       subscription_id=graphene.Int())
 
+    @login_required
     def resolve_list_all_subscription(self, info):
-        return Subscription.objects.all().order_by('-id')
+        return Subscription.objects.filter(user_id=info.context.user.id).order_by('-id')
 
-    def resolve_list_subscription_by_user_id(self, info, user_id):
-        return Subscription.objects.filter(user_id=user_id).order_by('-id')
 
     def resolve_list_subscription(self, info, country_ids, urgency_array, severity_array,
                                   certainty_array):
@@ -104,6 +115,7 @@ class Query(graphene.ObjectType):
                                            severity_array__contains=severity_array,
                                            certainty_array__contains=certainty_array)\
             .order_by('-id')
+
 
     def resolve_get_subscription(self, info, subscription_id):
         return Subscription.objects.get(id=subscription_id)
