@@ -6,7 +6,7 @@ import websockets
 import os
 import logging
 
-from subscription_dir.models import Subscription
+
 from asgiref.sync import sync_to_async
 from .tasks import send_subscription_email
 from websockets.sync.client import connect
@@ -18,6 +18,7 @@ class WebsocketConnection:
         self.websocket = None
 
     def filter_subscription(self, alert_map):
+        from subscription_dir.models import Subscription
         return list(Subscription.objects.filter(
             country_ids__contains=[alert_map["country_id"]],
             urgency_array__contains=[alert_map["urgency"]],
@@ -61,7 +62,7 @@ class WebsocketConnection:
             return None
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
         # Connect to the WebSocket server
-        with connect(f'wss://{host_name}/ws/fetch_new_alert/1a/',
+        with connect(f'{host_name}/ws/fetch_new_alert/1a/',
                                   origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
             WebsocketConnection.isConnected(True)
             self.websocket = websocket

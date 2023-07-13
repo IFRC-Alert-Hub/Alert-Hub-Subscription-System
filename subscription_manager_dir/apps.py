@@ -1,6 +1,11 @@
+import os
+import signal
+import threading
+
 from django.apps import AppConfig
 from django.core import management
 
+from subscription_manager_dir.WebsocketThread import WebsocketThread
 class SubscriptionManagerConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'subscription_manager_dir'
@@ -15,8 +20,16 @@ class SubscriptionManagerConfig(AppConfig):
         return cls.connected
 
     def ready(self):
-        if not self.__class__.checkConnected():
-            management.call_command('startconnection')
-            self.__class__.isConnected()
+        if os.environ.get('RUN_MAIN') == 'true':
+            current_thread = threading.current_thread()
+            thread_name = current_thread.name
+            thread_id = current_thread.ident
+            print("Current Thread: Name={}, ID={}".format(thread_name, thread_id))
+            signal.signal(signal.SIGINT, self.shutdown)
+            self.websocket_thread = WebsocketThread()
+            self.websocket_thread.start()
+
+    def shutdown(self, signum, frame):
+        self.websocket_thread.shutdown()
 
 
