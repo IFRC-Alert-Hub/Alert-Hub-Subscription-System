@@ -75,17 +75,8 @@ class APITestCaseWithoutLogin(GraphQLTestCase):
 
         # Test registration with existing email
         response = self.query(
-            '''
-            mutation {
-                register(email: "newuser@example.com", password: "newpassword", verifyCode: "123456") {
-                    success
-                    errors {
-                        email
-                        verifyCode
-                    }
-                }
-            }
-            '''
+            '''mutation { register(email: "newuser@example.com", password: "newpassword", 
+            verifyCode: "123456") { success errors { email verifyCode } } }'''
         )
         content = json.loads(response.content)
 
@@ -133,7 +124,8 @@ class APITestCaseWithoutLogin(GraphQLTestCase):
 
         self.assertResponseNoErrors(response)
         self.assertFalse(content['data']['sendVerifyEmail']['success'])
-        self.assertEqual(content['data']['sendVerifyEmail']['errors']['email'], 'Email already exists.')
+        self.assertEqual(content['data']['sendVerifyEmail']['errors']['email'],
+                         'Email already exists.')
 
     def test_login_mutation(self):
         get_user_model().objects.create_user(email='newuser@example.com', password='newpassword')
