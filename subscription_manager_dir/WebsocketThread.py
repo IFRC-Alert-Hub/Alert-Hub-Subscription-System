@@ -20,26 +20,26 @@ class WebsocketThread(threading.Thread):
                 break
             except KeyboardInterrupt:  # pylint: disable=broad-except
                 self.websocket_connection.close_connection()
-                print("The connection is closed!")
+                self.websocket_connection.logger.info("The connection is closed!")
                 break
             except TimeoutError:
-                print("This connection is timeout, retry the connection....")
+                self.websocket_connection.logger.info("This connection is timeout, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionRefusedError:
-                print("The connection is refused, retry the connection....")
+                self.websocket_connection.logger.info("The connection is refused, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionAbortedError:
-                print("The connection is aborted, retry the connection....")
+                self.websocket_connection.logger.info("The connection is aborted, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except InvalidStatus:
-                print("The connection is rejected, retry the connection....")
+                self.websocket_connection.logger.info("The connection is rejected, retry the connection....")
                 WebsocketConnection.isConnected(False)
             except ConnectionClosedOK:
-                print("The connection is successfully closed.")
+                self.websocket_connection.logger.info("The connection is successfully closed.")
                 WebsocketConnection.isConnected(False)
                 break
             except ConnectionError:
-                print("The connection is rejected.")
+                self.websocket_connection.logger.info("The connection is rejected.")
                 self.websocket_connection.close_connection()
                 break
 

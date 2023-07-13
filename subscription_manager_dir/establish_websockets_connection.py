@@ -16,6 +16,11 @@ class WebsocketConnection:
     connected = False
     def __init__(self):
         self.websocket = None
+        # Configure logging settings
+        logging.basicConfig(level=logging.INFO)
+
+        # Create a logger instance
+        self.logger = logging.getLogger(__name__)
 
     def filter_subscription(self, alert_map):
         from subscription_dir.models import Subscription
@@ -57,13 +62,8 @@ class WebsocketConnection:
         return cls.connected
 
     def establish_websocket_connection(self):
-        # Configure logging settings
-        logging.basicConfig(level=logging.INFO)
-
-        # Create a logger instance
-        logger = logging.getLogger(__name__)
         if WebsocketConnection.checkConnected():
-            logger.info("The websocket connection is already established!")
+            self.logger.info("The websocket connection is already established!")
             return None
         host_name = os.environ.get("CAPAGGREGATOR_CONNECTION_WEBSITE")
         # Connect to the WebSocket server
@@ -71,7 +71,7 @@ class WebsocketConnection:
                                   origin=os.environ.get("WEBSOCKET_ORIGIN")) as websocket:
             WebsocketConnection.isConnected(True)
             self.websocket = websocket
-            logger.info("Connection Established!")
+            self.logger.info("Connection Established!")
             while True:
                     message = websocket.recv()
                     self.process_incoming_alert(message=message)
