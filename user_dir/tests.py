@@ -84,7 +84,9 @@ class APITestCaseWithoutLogin(GraphQLTestCase):
         self.assertFalse(content['data']['register']['success'])
         self.assertEqual(content['data']['register']['errors']['email'], 'Email already exists.')
 
-    def test_send_verify_email_mutation(self):
+    @patch('user_dir.tasks.send_email.delay',
+           side_effect=lambda email, subject, template, context: None)
+    def test_send_verify_email_mutation(self, mock_send_email):
         # Test successful sending of verification email
         response = self.query(
             '''

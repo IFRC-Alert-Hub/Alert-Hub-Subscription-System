@@ -44,9 +44,4 @@ jobs:
         pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
     - name: Run Tests with coverage
       run: |
-        pip install coverage
-        coverage run manage.py test
-    - name: Upload coverage to Codecov
-      run: |
-        pip install codecov
-        codecov
+        python manage.py test
