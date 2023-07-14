@@ -1,15 +1,15 @@
 import json
-from jwt import MissingRequiredClaimError, InvalidTokenError
 from datetime import timedelta
 from unittest.mock import patch
+from jwt import MissingRequiredClaimError, InvalidTokenError
 from graphene_django.utils.testing import GraphQLTestCase
-
-from .utils import generate_jti, jwt_payload, jwt_decode, _validate_jti
 
 from django.test import TestCase
 from django.utils import timezone
 from django.test import Client
 from django.contrib.auth import get_user_model
+
+from .utils import generate_jti, jwt_payload, jwt_decode, _validate_jti
 
 
 class APITestCaseWithJWT(GraphQLTestCase):
@@ -63,26 +63,6 @@ class APITestCaseWithJWT(GraphQLTestCase):
         self.assertResponseNoErrors(response)
         self.assertTrue(content['data']['updateProfile']['success'])
         self.assertIsNone(content['data']['updateProfile']['errors'])
-
-    def test_logout_mutation(self):
-        # Get the old JWT
-        old_jwt = self.client.cookies.get('JWT')
-
-        # Test successful logout
-        response = self.client.post(self.GRAPHQL_URL, {
-            'query': '''
-                mutation {
-                    logout {
-                        success
-                    }
-                }
-            '''
-        })
-        self.assertEqual(response.status_code, 200)
-
-        # Check that a new JWT has been generated
-        new_jwt = self.client.cookies.get('JWT')
-        self.assertNotEqual(old_jwt, new_jwt)
 
     def test_logout_mutation(self):
         # Get the old JWT
@@ -260,17 +240,16 @@ class APITestCaseWithoutJWT(GraphQLTestCase):
         user.save()
 
         response = self.client.post(self.GRAPHQL_URL, {
-            'query': f'''
-                                mutation {{
-                                    resetPasswordConfirm(password: "newpassword", 
-                                    verifyCode: "1234") {{
-                                        success
-                                        errors {{
-                                            verifyCode
-                                        }}
-                                    }}
-                                }}
-                            '''
+            'query': '''
+                mutation {
+                    resetPasswordConfirm(password: "newpassword", verifyCode: "1234") {
+                        success
+                        errors {
+                            verifyCode
+                        }
+                    }
+                }
+            '''
         })
 
         content = json.loads(response.content)
