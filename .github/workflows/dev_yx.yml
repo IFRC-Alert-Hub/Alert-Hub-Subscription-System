@@ -45,5 +45,5 @@ jobs:
     - name: Run Tests with coverage
       run: |
         pip install coverage
-        coverage run manage.py test
+        coverage run --source=user_dir manage.py test user_dir
         coverage report
