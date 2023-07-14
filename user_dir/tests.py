@@ -206,7 +206,9 @@ class APITestCaseWithoutJWT(GraphQLTestCase):
         self.assertEqual(content['data']['sendVerifyEmail']['errors']['email'],
                          'Email already exists.')
 
-    def test_reset_password_mutation(self):
+    @patch('user_dir.tasks.send_email.delay',
+           side_effect=lambda email, subject, template, context: None)
+    def test_reset_password_mutation(self, mock_send_email):
         # Create a user
         get_user_model().objects.create_user(email='newuser@example.com', password='oldpassword')
 
