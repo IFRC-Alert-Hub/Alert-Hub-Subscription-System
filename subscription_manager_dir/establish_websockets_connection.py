@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-
 from websockets.sync.client import connect
 from .tasks import send_subscription_email
 

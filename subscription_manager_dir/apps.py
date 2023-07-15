@@ -2,6 +2,9 @@ import logging
 import os
 import signal
 import threading
+import random
+import time
+from django.core.cache import cache
 
 from django.apps import AppConfig
 from subscription_manager_dir.websocket_thread import WebsocketThread
@@ -21,13 +24,24 @@ class SubscriptionManagerConfig(AppConfig):
         return cls.connected
 
     def ready(self):
+        # Generate a random delay in milliseconds (0 to 5000 ms)
+        delay_ms = random.randint(0, 5000)
+        # Convert milliseconds to seconds (1 second = 1000 milliseconds)
+        delay_seconds = delay_ms / 1000.0
+        time.sleep(delay_seconds)
+
+
+
+
+
+
         # Configure logging settings
         logging.basicConfig(level=logging.INFO)
         # Create a logger instance
         logger = logging.getLogger(__name__)
         logger.info("Trying Establishing the Websocket Connection...")
-        if os.environ.get('RUN_MAIN') == 'true' or os.environ.get('RUN_MAIN') == None:
-            logger.info("Really?")
+        if cache.get('connected') == None:
+            cache.set('connected', 'True', timeout=20)
             current_thread = threading.current_thread()
             thread_name = current_thread.name
             thread_id = current_thread.ident
