@@ -28,15 +28,19 @@ class WebsocketConnection:
 
     def process_incoming_alert(self, message):
         alert_map = json.loads(message)["message"]
-        print(alert_map)
         matched_subscriptions = self.filter_subscription(alert_map)
 
         for subscription in matched_subscriptions:
             context = {
+                'id': alert_map["id"],
                 'country_name': alert_map["country_name"],
+                'country_id': alert_map["country_id"],
+                'source_feed': alert_map["source_feed"],
+                'scope': alert_map["scope"],
                 'urgency': alert_map["urgency"],
                 'severity': alert_map["severity"],
                 'certainty': alert_map["certainty"],
+                'info': alert_map["info"]
             }
             try:
                 send_subscription_email.delay(subscription.user_id,
