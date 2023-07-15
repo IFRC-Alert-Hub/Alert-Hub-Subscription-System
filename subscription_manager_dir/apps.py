@@ -1,3 +1,4 @@
+import logging
 import os
 import signal
 import threading
@@ -20,7 +21,13 @@ class SubscriptionManagerConfig(AppConfig):
         return cls.connected
 
     def ready(self):
+        # Configure logging settings
+        logging.basicConfig(level=logging.INFO)
+        # Create a logger instance
+        logger = logging.getLogger(__name__)
+        logger.info("Trying Establishing the Websocket Connection...")
         if os.environ.get('RUN_MAIN') == 'true':
+            logger.info("Really?")
             current_thread = threading.current_thread()
             thread_name = current_thread.name
             thread_id = current_thread.ident
