@@ -26,7 +26,7 @@ class SubscriptionManagerConfig(AppConfig):
         # Create a logger instance
         logger = logging.getLogger(__name__)
         logger.info("Trying Establishing the Websocket Connection...")
-        if os.environ.get('RUN_MAIN') == 'true':
+        if os.environ.get('RUN_MAIN') == 'true' or os.environ.get('RUN_MAIN') == None:
             logger.info("Really?")
             current_thread = threading.current_thread()
             thread_name = current_thread.name
