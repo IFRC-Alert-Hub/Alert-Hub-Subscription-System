@@ -25,9 +25,8 @@ class SubscriptionManagerConfig(AppConfig):
         return cls.connected
 
     def ready(self):
-        if os.environ.get('WEBSOCKET_CONNECTION', False) \
-                and 'migrate' not in sys.argv \
-                and 'runserver' in sys.argv:
+        if 'WEBSITE_HOSTNAME' in os.environ or \
+            ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
             print("True")
             # Generate a random delay in milliseconds (0 to 5000 ms)
             delay_ms = random.randint(0, 5000)
