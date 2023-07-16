@@ -27,7 +27,6 @@ class SubscriptionManagerConfig(AppConfig):
     def ready(self):
         if 'WEBSITE_HOSTNAME' in os.environ or \
             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-            print("True")
             # Generate a random delay in milliseconds (0 to 5000 ms)
             delay_ms = random.randint(0, 5000)
             # Convert milliseconds to seconds (1 second = 1000 milliseconds)
