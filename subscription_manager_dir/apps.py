@@ -38,7 +38,7 @@ class SubscriptionManagerConfig(AppConfig):
             # Create a logger instance
             logger = logging.getLogger(__name__)
             logger.info("Trying Establishing the Websocket Connection...")
-            if cache.get('connected') == None:
+            if cache.get('connected') is None:
                 cache.set('connected', 'True', timeout=20)
                 current_thread = threading.current_thread()
                 thread_name = current_thread.name
