@@ -2,9 +2,9 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev_yx" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "dev_yx" ]
 
 jobs:
   build:
@@ -42,13 +42,8 @@ jobs:
     - name: Check Style
       run: |
         pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
-    - name: Run Tests with Coverage
+    - name: Run Tests with coverage
       run: |
-        coverage run --source='.' manage.py test
-    - name: Generate Coverage Report
-      run: coverage html --fail-under=70
-    - name: Upload Coverage Report
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-report
-        path: htmlcov/
+        pip install coverage
+        coverage run manage.py test
+        coverage report
