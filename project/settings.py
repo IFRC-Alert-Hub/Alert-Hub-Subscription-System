@@ -195,9 +195,12 @@ DEFAULT_FROM_EMAIL = 'Celery <uclalert0@gmail.com>'
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'verify_code',
-    }
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get("REDIS_URL"),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    },
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

@@ -7,12 +7,21 @@
     <h1>Subscription Alerts</h1>
     <h2>Hello {{ user.email }},</h2>
     <p>Here are the details of the alerts matching your subscription:</p>
-
     <ul>
         <li><strong>Country:</strong> {{ country_name }}</li>
         <li><strong>Severity:</strong> {{ severity }}</li>
         <li><strong>Certainty:</strong> {{ certainty }}</li>
         <li><strong>Urgency:</strong> {{ urgency }}</li>
+        <li><strong>Source Feed:</strong> {{ source_feed }}</li>
+        <li><strong>Scope:</strong> {{ scope }}</li>
+        {% for each_info in info %}
+            <li><strong>Headline: </strong> {{ each_info.headline }}</li>
+            <li><strong>Alert Information in Language: </strong> {{ each_info.language }}</li>
+            <li><strong>Category: </strong> {{ each_info.category }}</li>
+            <li><strong>Description: </strong> {{ each_info.description }}</li>
+            <li><strong>Headline: </strong> {{ each_info.headline }}</li>
+            <li><strong>Instruction:  </strong> {{ each_info.instruction }}</li>
+        {% endfor %}
         <!-- Add more alert details as needed -->
     </ul>
 </body>
