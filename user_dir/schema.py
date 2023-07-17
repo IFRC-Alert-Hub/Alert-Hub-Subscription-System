@@ -309,6 +309,7 @@ class UpdateProfile(graphene.Mutation):
 class Logout(graphene.Mutation):
     success = graphene.Boolean()
     errors = graphene.Field(ErrorType)
+    deleted = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
@@ -327,7 +328,7 @@ class Logout(graphene.Mutation):
                     and getattr(context, "jwt_cookie", False)
             )
 
-            return cls(success=True)
+            return cls(success=True, deleted=context.delete_jwt_cookie)
         except AttributeError as error:
             return cls(success=False, errors=str(error))
 
@@ -371,20 +372,25 @@ class ResetPasswordConfirm(graphene.Mutation):
     errors = graphene.Field(ErrorType)
 
     class Arguments:
+        email = graphene.String(required=True)
         verify_code = graphene.String(required=True)
         password = graphene.String(required=True)
 
     @csrf_exempt
-    def mutate(self, info, verify_code, password):
+    def mutate(self, info, email, verify_code, password):
         # Check if the token is empty
         if not verify_code:
             errors = ErrorType(verifyCode='Empty verify code.')
             return ResetPasswordConfirm(success=False, errors=errors)
 
         try:
-            user = CustomUser.objects.get(password_reset_token=verify_code)
+            user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            errors = ErrorType(verifyCode='Wrong verify code.')
+            errors = ErrorType(email='Email does not exists.')
+            return ResetPassword(success=False, errors=errors)
+
+        if user.password_reset_token != verify_code:
+            errors = ErrorType(verifyCode='Verify code is wrong.')
             return ResetPasswordConfirm(success=False, errors=errors)
 
         now = timezone.now()
