@@ -327,6 +327,7 @@ class Logout(graphene.Mutation):
                     jwt_settings.JWT_COOKIE_NAME in context.COOKIES
                     and getattr(context, "jwt_cookie", False)
             )
+            print(jwt_settings.JWT_COOKIE_SAMESITE)
 
             return cls(success=True, deleted=context.delete_jwt_cookie)
         except AttributeError as error:
@@ -415,8 +416,6 @@ class Mutation(graphene.ObjectType):
     update_profile = UpdateProfile.Field()
 
     logout = Logout.Field()
-
-    delet = graphql_jwt.DeleteJSONWebTokenCookie.Field()
 
     reset_password = ResetPassword.Field()
     reset_password_confirm = ResetPasswordConfirm.Field()
