@@ -410,6 +410,8 @@ class Mutation(graphene.ObjectType):
 
     logout = Logout.Field()
 
+    delet = graphql_jwt.DeleteJSONWebTokenCookie.Field()
+
     reset_password = ResetPassword.Field()
     reset_password_confirm = ResetPasswordConfirm.Field()
     reset_email = ResetEmail.Field()
