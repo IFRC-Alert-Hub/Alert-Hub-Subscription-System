@@ -192,7 +192,7 @@ class ResetEmailConfirm(graphene.Mutation):
         reset_token = uuid4()
         cache.set(user.email + "_confirm", reset_token, 600)
 
-        cache.delete(user.email + "_email_reset")
+        cache.delet(user.email + "_email_reset")
 
         return ResetEmailConfirm(success=True, token=reset_token)
 
@@ -327,7 +327,6 @@ class Logout(graphene.Mutation):
                     jwt_settings.JWT_COOKIE_NAME in context.COOKIES
                     and getattr(context, "jwt_cookie", False)
             )
-            print(jwt_settings.JWT_COOKIE_SAMESITE)
 
             return cls(success=True, deleted=context.delete_jwt_cookie)
         except AttributeError as error:
