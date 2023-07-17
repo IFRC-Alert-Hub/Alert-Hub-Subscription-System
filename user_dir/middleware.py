@@ -70,6 +70,7 @@ class DeleteJWTMiddleware:
             "path": jwt_settings.JWT_COOKIE_PATH,
             "domain": jwt_settings.JWT_COOKIE_DOMAIN,
         }
+
         if django.VERSION >= (2, 1):
             kwargs["samesite"] = jwt_settings.JWT_COOKIE_SAMESITE
 

@@ -192,7 +192,7 @@ class ResetEmailConfirm(graphene.Mutation):
         reset_token = uuid4()
         cache.set(user.email + "_confirm", reset_token, 600)
 
-        cache.delet(user.email + "_email_reset")
+        cache.delete(user.email + "_email_reset")
 
         return ResetEmailConfirm(success=True, token=reset_token)
 
