@@ -7,7 +7,7 @@ name: Build and deploy Python app to Azure Web App - backend-develop
 on:
   push:
     branches:
-      - websocket
+      - develop
   workflow_dispatch:
 
 jobs:
@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'backend-develop'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2B3697EC571748CE9C83BFD65492C3DF }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E56E0EB7AE1245CB9154EA3812EBD218 }}

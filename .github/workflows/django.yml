@@ -27,6 +27,18 @@ jobs:
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+      redis:
+        # Docker Hub image
+        image: redis
+        ports:
+          - 6379:6379
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -42,6 +54,13 @@ jobs:
     - name: Check Style
       run: |
         pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
-    - name: Run Tests with coverage
+    - name: Run Tests with Coverage
       run: |
-        python manage.py test
+        coverage run --source='.' manage.py test
+    - name: Generate Coverage Report
+      run: coverage html --fail-under=70
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: htmlcov/
