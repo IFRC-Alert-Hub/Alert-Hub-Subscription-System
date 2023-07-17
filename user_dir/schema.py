@@ -125,7 +125,6 @@ class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
 
     @classmethod
     def resolve(cls, root, info, **kwargs):
-        print(f"*** USER [{info.context.user}] AUTHENTICATED - VIA JWT token_auth ***")
 
         info.context.user.jti = generate_jti()
         info.context.user.save()
@@ -193,7 +192,7 @@ class ResetEmailConfirm(graphene.Mutation):
         reset_token = uuid4()
         cache.set(user.email + "_confirm", reset_token, 600)
 
-        cache.delet(user.email + "_email_reset")
+        cache.delete(user.email + "_email_reset")
 
         return ResetEmailConfirm(success=True, token=reset_token)
 
@@ -240,7 +239,7 @@ class SendNewVerifyEmail(graphene.Mutation):
 
         send_email.delay(new_email, 'Verify your new email.', 'email_verification.html', context)
 
-        return SendNewVerifyEmail(success=True, token=token)
+        return SendNewVerifyEmail(success=True)
 
 
 class NewEmailConfirm(graphene.Mutation):
@@ -310,6 +309,7 @@ class UpdateProfile(graphene.Mutation):
 class Logout(graphene.Mutation):
     success = graphene.Boolean()
     errors = graphene.Field(ErrorType)
+    deleted = graphene.Boolean()
 
     @classmethod
     def mutate(cls, root, info, **kwargs):
@@ -328,7 +328,7 @@ class Logout(graphene.Mutation):
                     and getattr(context, "jwt_cookie", False)
             )
 
-            return cls(success=True)
+            return cls(success=True, deleted=context.delete_jwt_cookie)
         except AttributeError as error:
             return cls(success=False, errors=str(error))
 
@@ -372,25 +372,30 @@ class ResetPasswordConfirm(graphene.Mutation):
     errors = graphene.Field(ErrorType)
 
     class Arguments:
-        verifyCode = graphene.String(required=True)
+        email = graphene.String(required=True)
+        verify_code = graphene.String(required=True)
         password = graphene.String(required=True)
 
     @csrf_exempt
-    def mutate(self, info, verify_code, password):
+    def mutate(self, info, email, verify_code, password):
         # Check if the token is empty
         if not verify_code:
-            errors = ErrorType(verifyCode='Empty verify code')
+            errors = ErrorType(verifyCode='Empty verify code.')
             return ResetPasswordConfirm(success=False, errors=errors)
 
         try:
-            user = CustomUser.objects.get(password_reset_token=verify_code)
+            user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            errors = ErrorType(verifyCode='Wrong verify code.')
+            errors = ErrorType(email='Email does not exists.')
+            return ResetPassword(success=False, errors=errors)
+
+        if user.password_reset_token != verify_code:
+            errors = ErrorType(verifyCode='Verify code is wrong.')
             return ResetPasswordConfirm(success=False, errors=errors)
 
         now = timezone.now()
 
-        if user.password_reset_token_expires_at > now:
+        if user.password_reset_token_expires_at < now:
             errors = ErrorType(verifyCode='Verify code has expired.')
             return ResetPasswordConfirm(success=False, errors=errors)
 
@@ -411,7 +416,8 @@ class Mutation(graphene.ObjectType):
 
     logout = Logout.Field()
 
-    # logout = Logout.Field()
+    delet = graphql_jwt.DeleteJSONWebTokenCookie.Field()
+
     reset_password = ResetPassword.Field()
     reset_password_confirm = ResetPasswordConfirm.Field()
     reset_email = ResetEmail.Field()
