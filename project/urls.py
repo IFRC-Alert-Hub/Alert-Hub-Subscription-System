@@ -24,5 +24,6 @@ urlpatterns = [
     path('', index, name='index'),
     path('users/', include('user_dir.urls')),
     path('subscription/', include('subscription_dir.urls')),
+    path('polygon/', include('polygon_dir.urls')),
     path('subscription_manager/', include('subscription_manager_dir.urls'))
 ]
