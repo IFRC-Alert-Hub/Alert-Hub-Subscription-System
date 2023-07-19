@@ -204,7 +204,7 @@ class SendNewVerifyEmail(graphene.Mutation):
     errors = graphene.Field(ErrorType)
 
     class Arguments:
-        token = graphene.UUID(required=True)
+        token = graphene.String(required=True)
         new_email = graphene.String(required=True)
 
     @login_required
@@ -226,7 +226,7 @@ class SendNewVerifyEmail(graphene.Mutation):
             errors = ErrorType(email='Email already exists.')
             return SendNewVerifyEmail(success=False, errors=errors)
 
-        if token != true_code:
+        if token != str(true_code):
             errors = ErrorType(verifyCode='Wrong verify code.')
             return SendNewVerifyEmail(success=False, errors=errors)
 
