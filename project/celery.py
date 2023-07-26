@@ -15,8 +15,10 @@ else:
 app = Celery('project')
 
 app.conf.beat_schedule = {
-
-
+    'process-non-immediate-alerts-every-12-hours': {
+        'task': 'subscription_manager_dir.tasks.process_non_immediate_alerts',
+        'schedule': timedelta(minutes=1),
+    },
 }
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
@@ -27,7 +29,8 @@ app.config_from_object(settings, namespace='CELERY')
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
 
-CELERY_IMPORTS = ('subscription_manager_dir.tasks', )
+CELERY_IMPORTS = ('subscription_manager_dir.tasks',)
+
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):

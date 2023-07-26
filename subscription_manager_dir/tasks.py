@@ -1,4 +1,6 @@
 # pylint: disable=R0801
+from collections import defaultdict
+
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -50,3 +52,40 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
     )
 
     return "Done"
+
+
+@shared_task
+def process_non_immediate_alerts():
+    from .models import Alerts
+    users = get_user_model().objects.all()
+    alerts = Alerts.objects.filter(is_sent=False).select_related('user')
+    user_alerts = defaultdict(list)
+
+    # Group alerts by user
+    for alert in alerts:
+        user_alerts[alert.user_id].append(alert)
+
+    # Send email to each user with their alerts
+    for user in users:
+        if user.id in user_alerts:
+            alerts_for_user = []
+            for alert in user_alerts[user.id]:
+                alerts_for_user.append({
+                    'id': alert.id,
+                    'country_name': alert.country_name,
+                    'country_id': alert.country_id,
+                    'source_feed': alert.source_feed,
+                    'scope': alert.scope,
+                    'urgency': alert.urgency,
+                    'severity': alert.severity,
+                    'certainty': alert.certainty,
+                    'info': alert.info,
+                    'created_at': alert.created_at,
+                })
+            context = {
+                'alerts': alerts_for_user,
+            }
+            send_subscription_email.delay(user.id, 'New Alerts Matching Your Subscription',
+                                          'non_immediate_alerts_email.html', context)
+            Alerts.objects.filter(id__in=[alert.id for alert in user_alerts[user.id]]).update(
+                is_sent=True)
