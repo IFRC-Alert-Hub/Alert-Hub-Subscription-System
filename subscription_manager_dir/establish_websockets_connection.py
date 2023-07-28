@@ -36,7 +36,7 @@ class WebsocketConnection:
                     'id': alert_map["url"],
                     'country_name': alert_map["country_name"],
                     'country_id': alert_map["country_id"],
-                    'source_feed': alert_map["source_feed"],
+                    'source_feed': alert_map["feed_url"],
                     'scope': alert_map["scope"],
                     'urgency': alert_map["urgency"],
                     'severity': alert_map["severity"],
