@@ -27,26 +27,36 @@ class WebsocketConnection:
 
     def process_incoming_alert(self, message):
         alert_map = json.loads(message)["message"]
-        matched_subscriptions = self.filter_subscription(alert_map)
 
+        if alert_map["urgency"] == "Immediate":
+            matched_subscriptions = self.filter_subscription(alert_map)
+
+            for subscription in matched_subscriptions:
+                context = {
+                    'id': alert_map["url"],
+                    'country_name': alert_map["country_name"],
+                    'country_id': alert_map["country_id"],
+                    'source_feed': alert_map["source_feed"],
+                    'scope': alert_map["scope"],
+                    'urgency': alert_map["urgency"],
+                    'severity': alert_map["severity"],
+                    'certainty': alert_map["certainty"],
+                    'info': alert_map["info"]
+                }
+                try:
+                    send_subscription_email.delay(subscription.user_id,
+                                                  'New Alerts Matching Your Subscription',
+                                                  'subscription_email.html', context)
+                except Exception as general_exception:  # pylint: disable=broad-except
+                    print(f"Error: {general_exception}")
+        else:
+            self.process_non_immediate_alert(alert_map)
+
+    def process_non_immediate_alert(self, alert_map):
+        from .models import Alerts
+        matched_subscriptions = self.filter_subscription(alert_map)
         for subscription in matched_subscriptions:
-            context = {
-                'id': alert_map["id"],
-                'country_name': alert_map["country_name"],
-                'country_id': alert_map["country_id"],
-                'source_feed': alert_map["source_feed"],
-                'scope': alert_map["scope"],
-                'urgency': alert_map["urgency"],
-                'severity': alert_map["severity"],
-                'certainty': alert_map["certainty"],
-                'info': alert_map["info"]
-            }
-            try:
-                send_subscription_email.delay(subscription.user_id,
-                                              'New Alerts Matching Your Subscription',
-                                              'subscription_email.html', context)
-            except Exception as general_exception:  # pylint: disable=broad-except
-                print(f"Error: {general_exception}")
+            Alerts.objects.create(user_id=subscription.user_id, **alert_map)
 
     @classmethod
     def is_connected(cls, flag):
