@@ -8,7 +8,6 @@
     <h2>Hello {{ user.email }},</h2>
     <p>Here are the details of the alerts matching your subscription:</p>
     {% for alert in alerts %}
-        <h3>Alert ID: {{ alert.id }}</h3>
         <ul>
             <li><strong>Country:</strong> {{ alert.country_name }}</li>
             <li><strong>Severity:</strong> {{ alert.severity }}</li>
