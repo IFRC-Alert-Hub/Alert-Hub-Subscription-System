@@ -33,7 +33,7 @@ class WebsocketConnection:
 
             for subscription in matched_subscriptions:
                 context = {
-                    'id': alert_map["id"],
+                    'id': alert_map["url"],
                     'country_name': alert_map["country_name"],
                     'country_id': alert_map["country_id"],
                     'source_feed': alert_map["source_feed"],
