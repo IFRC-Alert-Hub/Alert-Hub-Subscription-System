@@ -32,3 +32,5 @@ yarn-error.log*
 
 # python cache
 __pycache__/
+
+/staticfiles
