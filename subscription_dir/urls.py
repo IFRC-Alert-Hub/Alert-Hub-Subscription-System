@@ -5,5 +5,5 @@ from subscription_dir.schema import schema
 
 urlpatterns = [
     # ...
-    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
+    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=False, schema=schema))),
 ]
