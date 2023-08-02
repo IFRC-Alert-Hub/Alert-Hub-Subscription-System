@@ -7,7 +7,7 @@ name: Build and deploy Python app to Azure Web App - docker-compose-testing
 on:
   push:
     branches:
-      - docker_compose
+      - main
   workflow_dispatch:
 
 jobs:
