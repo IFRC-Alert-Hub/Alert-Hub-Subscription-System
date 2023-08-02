@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'subscription_manager_dir',
     'subscription_dir',
     'polygon_dir',
-    'filter',
     'user_dir',
     'django.contrib.admin',
     'django.contrib.auth',
