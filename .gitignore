@@ -34,4 +34,6 @@ yarn-error.log*
 __pycache__/
 
 /staticfiles
-startup.sh
+
+# redis
+dump.rdb
