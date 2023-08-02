@@ -34,3 +34,6 @@ yarn-error.log*
 __pycache__/
 
 /staticfiles
+
+# redis
+dump.rdb
