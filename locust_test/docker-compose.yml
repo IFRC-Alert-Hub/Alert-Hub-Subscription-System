@@ -2,7 +2,7 @@ version: '3'
 
 services:
   master:
-    image: locustio/locust
+    image: mylocustimage
     ports:
      - "8089:8089"
     volumes:
@@ -10,7 +10,7 @@ services:
     command: -f /mnt/locust/locustfile.py --master -H http://master:8089
 
   worker:
-    image: locustio/locust
+    image: mylocustimage
     volumes:
       - ./:/mnt/locust
     command: -f /mnt/locust/locustfile.py --worker --master-host master
