@@ -1,27 +1,31 @@
-# Dockerfile
-# Use an official Python runtime as a parent image
-FROM python:3.8
+FROM python:3.11
 
-# Set the working directory in the container to /app
-WORKDIR /app
-
-# Add the current directory files (.) to the working directory in the container (/app)
-ADD . /app
-
-# Set environment variables
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
-# Upgrade pip and install any needed packages specified in requirements.txt
-RUN pip install --upgrade pip
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt; pylint **/*.py
+RUN apt-get update \
+  # dependencies for building Python packages
+  && apt-get install -y build-essential \
+  # psycopg2 dependencies
+  && apt-get install -y libpq-dev \
+  # Translations dependencies
+  && apt-get install -y gettext \
+  # cleaning up unused files
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/*
 
-# Expose port 8000 for the app
-EXPOSE 8000
+# Requirements are installed here to ensure they will be cached.
+COPY ./requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
 
-# Collect static files for Django
-RUN python manage.py collectstatic --noinput
+# Copy the current directory files (.) to the working directory in the container (/app)
+COPY . /app
 
-# Run the Django service when the container launches
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//g' /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /app
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
