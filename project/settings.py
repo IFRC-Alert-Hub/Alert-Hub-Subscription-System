@@ -109,18 +109,27 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 # Configure Postgres database based on connection string of the libpq Keyword/Value form
 # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
-conn_str = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
-conn_str_params = {pair.split('=')[0]: pair.split('=')[1] for pair in conn_str.split(' ')}
+subscription_conn_str = os.environ['SUBSCRIPTION_POSTGRESQL_CONNECTIONSTRING']
+subscription_conn_str_params = {pair.split('=')[0]: pair.split('=')[1] for pair in subscription_conn_str.split(' ')}
+alert_conn_str = os.environ['ALERT_POSTGRESQL_CONNECTIONSTRING']
+alert_conn_str_params = {pair.split('=')[0]: pair.split('=')[1] for pair in alert_conn_str.split(' ')}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': conn_str_params['dbname'],
-        'HOST': conn_str_params['host'],
-        'USER': conn_str_params['user'],
-        'PASSWORD': conn_str_params['password'],
+        'NAME': subscription_conn_str_params['dbname'],
+        'HOST': subscription_conn_str_params['host'],
+        'USER': subscription_conn_str_params['user'],
+        'PASSWORD': subscription_conn_str_params['password'],
         'TEST': {
             'NAME': 'test',
         },
+    },
+    'AlertDB': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': alert_conn_str_params['dbname'],
+        'HOST': alert_conn_str_params['host'],
+        'USER': alert_conn_str_params['user'],
+        'PASSWORD': alert_conn_str_params['password'],
     }
 }
 
@@ -201,7 +210,7 @@ CACHES = {
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
-    },
+    }
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
