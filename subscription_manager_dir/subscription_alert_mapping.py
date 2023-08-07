@@ -1,10 +1,15 @@
 from .external_alert_models import *
 from subscription_dir.models import Subscription
-from .subscription_alert_models import *
-def map_subscriptions_to_alert():
+from .models import *
+def map_alerts_to_subscription():
     for subscription in Subscription.objects.all():
-        map_subscription_to_alert(subscription)
-def map_subscription_to_alert(subscription):
+        if not hasattr(subscription, 'subscriptionalerts'):
+            map_alert_to_subscription(subscription)
+        else:
+            pass
+
+
+def map_alert_to_subscription(subscription):
     alert_ids = []
     for id in subscription.district_ids:
         admin1 = CapFeedAdmin1.objects.using('AlertDB').filter(id=id).first()
@@ -18,11 +23,9 @@ def map_subscription_to_alert(subscription):
                 alert_ids.append(alert.id)
 
     SubscriptionAlerts.objects.create(alert_ids=alert_ids,subscription=subscription).save()
-    print(alert_ids)
 
 def print_all_admin1s_in_country(id):
     ids = []
     admin1s = CapFeedAdmin1.objects.using('AlertDB').filter(country__id=id)
     for admin in admin1s:
         ids.append(admin.id)
-    print(ids)

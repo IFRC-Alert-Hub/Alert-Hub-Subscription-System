@@ -5,9 +5,11 @@ import sys
 import threading
 import random
 import time
-from django.core.cache import cache
 
 from django.apps import AppConfig
+from django.db.models.signals import post_save
+from django.core.cache import cache
+from .cache import cache_subscription_alert
 
 
 class SubscriptionManagerConfig(AppConfig):
@@ -17,8 +19,13 @@ class SubscriptionManagerConfig(AppConfig):
     def ready(self):
         if 'WEBSITE_HOSTNAME' in os.environ or \
             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-            from .subscription_alert_mapping import map_subscriptions_to_alert,print_all_admin1s_in_country
-            result = cache.add('locked', True, timeout=10)
+            from .subscription_alert_mapping import map_alerts_to_subscription
+            result = cache.add('locked', True, timeout=5)
             if result:
-                map_subscriptions_to_alert()
-                print_all_admin1s_in_country(161)
+                SubscriptionAlerts = self.get_model(
+                    "SubscriptionAlerts")
+                post_save.connect(cache_subscription_alerts, sender=SubscriptionAlerts)
+                map_alerts_to_subscription()
+
+def cache_subscription_alerts(sender, instance, *args, **kwargs):
+    cache_subscription_alert(instance)

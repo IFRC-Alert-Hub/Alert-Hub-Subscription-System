@@ -29,6 +29,22 @@ class CapFeedAlert(models.Model):
         managed = False
         db_table = 'cap_feed_alert'
 
+    def to_dict(self):
+        alert_dict = {}
+        alert_dict["id"] = self.id
+        first_info = self.capfeedalertinfo_set.first()
+
+        alert_dict["event"] = first_info.event
+        alert_dict["category"] = first_info.category
+        alert_dict["country_name"] = self.country.name
+        district_name = []
+        for admin1 in self.admin1s.all():
+            district_name.append(admin1.name)
+        alert_dict["districts"] = district_name
+        alert_dict["sent"] = str(self.sent)
+
+        return alert_dict
+
 class CapFeedAlertadmin1(models.Model):
     id = models.BigAutoField(primary_key=True)
     admin1 = models.ForeignKey(CapFeedAdmin1, models.DO_NOTHING)

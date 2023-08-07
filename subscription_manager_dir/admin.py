@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .subscription_alert_models import SubscriptionAlerts
+from .models import SubscriptionAlerts
 from .external_alert_models import CapFeedAdmin1, CapFeedAlert, CapFeedAlertadmin1, \
     CapFeedAlertinfo, CapFeedCountry
 
