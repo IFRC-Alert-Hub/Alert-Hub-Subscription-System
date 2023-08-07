@@ -30,7 +30,8 @@ class TestCase(GraphQLTestCase):
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"])
+                            subscribe_by=["sms", "email"],
+                            sent_flag=0)
         # Create a subscription for user 2
         create_subscription(user_id=2,
                             subscription_name="test_group2",
@@ -39,7 +40,8 @@ class TestCase(GraphQLTestCase):
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"])
+                            subscribe_by=["sms", "email"],
+                            sent_flag=0)
 
     def setUp(self):
         # Log in the user
@@ -55,6 +57,7 @@ class TestCase(GraphQLTestCase):
                 countryIds
                 districtIds
                 id
+                sentFlag
                 severityArray
                 subscribeBy
                 subscriptionName
@@ -83,6 +86,7 @@ class TestCase(GraphQLTestCase):
                          ["observed", "likely"])
         self.assertEqual(content['data']['listAllSubscription'][0]['subscribeBy'],
                          ["sms", "email"])
+        self.assertEqual(content['data']['listAllSubscription'][0]['sentFlag'], 0)
 
     # Test query for list subscriptions by filters
     def test_query_list_subscription(self):
@@ -104,6 +108,7 @@ class TestCase(GraphQLTestCase):
                 severityArray
                 certaintyArray
                 subscribeBy
+                sentFlag
               }
             }
             '''
@@ -129,6 +134,7 @@ class TestCase(GraphQLTestCase):
                 severityArray
                 certaintyArray
                 subscribeBy
+                sentFlag
               }
             }
             '''
@@ -151,6 +157,7 @@ class TestCase(GraphQLTestCase):
                          ["observed", "likely"])
         self.assertEqual(content['data']['getSubscription']['subscribeBy'],
                          ["sms", "email"])
+        self.assertEqual(content['data']['getSubscription']['sentFlag'], 0)
 
     # Test mutation for create subscription
     def test_query_create_subscription(self):
@@ -164,7 +171,8 @@ class TestCase(GraphQLTestCase):
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
-                subscribeBy: ["sms", "email"]
+                subscribeBy: ["sms", "email"],
+                sentFlag: 0
               ){
                 subscription {
                   id
@@ -176,6 +184,7 @@ class TestCase(GraphQLTestCase):
                   severityArray
                   certaintyArray
                   subscribeBy
+                  sentFlag
                 }
               }
             }
@@ -199,6 +208,7 @@ class TestCase(GraphQLTestCase):
                          ["observed", "likely"])
         self.assertEqual(content['data']['createSubscription']['subscription']['subscribeBy'],
                          ["sms", "email"])
+        self.assertEqual(content['data']['createSubscription']['subscription']['sentFlag'], 0)
 
     # Test mutation for update subscription
     def test_query_update_subscription(self):
@@ -213,7 +223,8 @@ class TestCase(GraphQLTestCase):
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
-                subscribeBy: ["sms", "email"]
+                subscribeBy: ["sms", "email"],
+                sentFlag: 0
               ){
                 success
                 errorMessage
@@ -241,7 +252,8 @@ class TestCase(GraphQLTestCase):
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
-                subscribeBy: ["sms", "email"]
+                subscribeBy: ["sms", "email"],
+                sentFlag: 0
               ){
                 success
                 errorMessage
