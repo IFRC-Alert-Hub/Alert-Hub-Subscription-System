@@ -133,6 +133,9 @@ DATABASES = {
     }
 }
 
+DATABASE_ROUTERS = ['DBRouter.AlertDBRouter']
+
+
 if os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {

@@ -12,7 +12,7 @@ def map_alerts_to_subscription():
 def map_alert_to_subscription(subscription):
     alert_ids = []
     for id in subscription.district_ids:
-        admin1 = CapFeedAdmin1.objects.using('AlertDB').filter(id=id).first()
+        admin1 = CapFeedAdmin1.objects.filter(id=id).first()
         potential_alert_set = admin1.capfeedalert_set.all()
 
         for alert in potential_alert_set:
@@ -26,6 +26,6 @@ def map_alert_to_subscription(subscription):
 
 def print_all_admin1s_in_country(id):
     ids = []
-    admin1s = CapFeedAdmin1.objects.using('AlertDB').filter(country__id=id)
+    admin1s = CapFeedAdmin1.objects.filter(country__id=id)
     for admin in admin1s:
         ids.append(admin.id)
