@@ -8,45 +8,17 @@ import time
 from django.core.cache import cache
 
 from django.apps import AppConfig
-from subscription_manager_dir.websocket_thread import WebsocketThread
 
 
 class SubscriptionManagerConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'subscription_manager_dir'
-    connected = False
-
-    @classmethod
-    def is_connected(cls):
-        cls.connected = True
-
-    @classmethod
-    def check_connected(cls):
-        return cls.connected
 
     def ready(self):
         if 'WEBSITE_HOSTNAME' in os.environ or \
             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-            # Generate a random delay in milliseconds (0 to 5000 ms)
-            delay_ms = random.randint(0, 5000)
-            # Convert milliseconds to seconds (1 second = 1000 milliseconds)
-            delay_seconds = delay_ms / 1000.0
-            time.sleep(delay_seconds)
-
-            # Configure logging settings
-            logging.basicConfig(level=logging.INFO)
-            # Create a logger instance
-            logger = logging.getLogger(__name__)
-            logger.info("Trying Establishing the Websocket Connection...")
-            if cache.get('connected') is None:
-                cache.set('connected', 'True', timeout=20)
-                current_thread = threading.current_thread()
-                thread_name = current_thread.name
-                thread_id = current_thread.ident
-                print(f"Current Thread: Name={thread_name}, ID={thread_id}")
-                signal.signal(signal.SIGINT, self.shutdown)
-                self.websocket_thread = WebsocketThread()
-                self.websocket_thread.start()
-
-    def shutdown(self, signum, frame):
-        self.websocket_thread.shutdown()
+            from .subscription_alert_mapping import map_subscriptions_to_alert,print_all_admin1s_in_country
+            result = cache.add('locked', True, timeout=10)
+            if result:
+                map_subscriptions_to_alert()
+                print_all_admin1s_in_country(161)
