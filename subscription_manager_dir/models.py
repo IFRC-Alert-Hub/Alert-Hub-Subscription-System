@@ -12,6 +12,6 @@ class SubscriptionAlerts(models.Model):
         alert_ids = self.alert_ids
 
         for alert_id in alert_ids:
-            alert = CapFeedAlert.objects.using("AlertDB").get(id=alert_id)
+            alert = CapFeedAlert.objects.get(id=alert_id)
             alerts_list.append(alert.to_dict())
         return alerts_list
