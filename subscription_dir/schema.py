@@ -8,11 +8,11 @@ class SubscriptionType(DjangoObjectType):
     class Meta:
         model = Subscription
         fields = ["id", "subscription_name", "user_id", "country_ids", "district_ids",
-                  "urgency_array", "severity_array", "certainty_array", "subscribe_by"]
+                  "urgency_array", "severity_array", "certainty_array", "subscribe_by", "sent_flag"]
 
 
 def create_subscription(user_id, subscription_name, country_ids, district_ids,
-                        urgency_array, severity_array, certainty_array, subscribe_by):
+                        urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
     subscription = Subscription(user_id=user_id,
                                 subscription_name=subscription_name,
                                 country_ids=country_ids,
@@ -20,7 +20,8 @@ def create_subscription(user_id, subscription_name, country_ids, district_ids,
                                 urgency_array=urgency_array,
                                 severity_array=severity_array,
                                 certainty_array=certainty_array,
-                                subscribe_by=subscribe_by)
+                                subscribe_by=subscribe_by,
+                                sent_flag=sent_flag)
     subscription.save()
     return subscription
 
@@ -34,12 +35,13 @@ class CreateSubscription(graphene.Mutation):
         severity_array = graphene.List(graphene.String)
         certainty_array = graphene.List(graphene.String)
         subscribe_by = graphene.List(graphene.String)
+        sent_flag = graphene.Int(required=True)
 
     subscription = graphene.Field(SubscriptionType)
 
     @login_required
     def mutate(self, info, subscription_name, country_ids, district_ids,
-               urgency_array, severity_array, certainty_array, subscribe_by):
+               urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
         subscription = create_subscription(info.context.user.id,
                                            subscription_name,
                                            country_ids,
@@ -47,7 +49,8 @@ class CreateSubscription(graphene.Mutation):
                                            urgency_array,
                                            severity_array,
                                            certainty_array,
-                                           subscribe_by)
+                                           subscribe_by,
+                                           sent_flag)
         return CreateSubscription(subscription=subscription)
 
 
@@ -81,13 +84,14 @@ class UpdateSubscription(graphene.Mutation):
         severity_array = graphene.List(graphene.String)
         certainty_array = graphene.List(graphene.String)
         subscribe_by = graphene.List(graphene.String)
+        sent_flag = graphene.Int(required=True)
 
     success = graphene.Boolean()
     error_message = graphene.String()
 
     def mutate(self, info, subscription_id, subscription_name,
                country_ids, district_ids,
-               urgency_array, severity_array, certainty_array, subscribe_by):
+               urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
         subscription = Subscription.objects.get(id=subscription_id)
         login_user_id = info.context.user.id
         if subscription.user_id != login_user_id:
@@ -101,6 +105,7 @@ class UpdateSubscription(graphene.Mutation):
         subscription.severity_array = severity_array
         subscription.certainty_array = certainty_array
         subscription.subscribe_by = subscribe_by
+        subscription.sent_flag = sent_flag
         subscription.save()
         return UpdateSubscription(success=True)
 

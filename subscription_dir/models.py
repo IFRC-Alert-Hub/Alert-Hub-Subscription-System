@@ -12,3 +12,4 @@ class Subscription(models.Model):
     severity_array = ArrayField(models.CharField(verbose_name='severity_array'), default=list)
     certainty_array = ArrayField(models.CharField(verbose_name='certainty_array'), default=list)
     subscribe_by = ArrayField(models.CharField(verbose_name="subscribe_by"), default=list)
+    sent_flag = models.IntegerField(default=0, verbose_name="sent_flag")
