@@ -89,3 +89,11 @@ def process_non_immediate_alerts():
                                           'non_immediate_alerts_email.html', context)
             Alerts.objects.filter(id__in=[alert.id for alert in user_alerts[user.id]]).update(
                 is_sent=True)
+
+@shared_task
+def get_incoming_alert(alert_id):
+    pass
+
+@shared_task
+def get_removed_alert(alert_id):
+    pass

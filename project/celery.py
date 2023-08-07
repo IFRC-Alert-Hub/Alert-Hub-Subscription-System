@@ -4,6 +4,7 @@ from celery.schedules import crontab
 from datetime import timedelta
 from django.conf import settings
 from dotenv import load_dotenv
+from kombu import Queue
 
 # Load environment variables from .env file
 if 'WEBSITE_HOSTNAME' not in os.environ:
@@ -31,6 +32,21 @@ app.autodiscover_tasks()
 
 CELERY_IMPORTS = ('subscription_manager_dir.tasks',)
 
+app.conf.task_default_queue = 'subscription_manager'
+app.conf.task_queues = (
+    Queue('subscription_manager', routing_key='subscription_manager.#', exchange='subscription_manager'),
+)
+app.conf.task_default_exchange = 'subscription_manager'
+app.conf.task_default_exchange_type = 'topic'
+app.conf.task_default_routing_key = 'subscription_manager.default'
+
+task_routes = {
+        'subscription_manager_dir.tasks.*': {
+            'queue': 'subscription_manager',
+            'routing_key': 'subscription_manager.#',
+            'exchange' : 'subscription_manager',
+        },
+}
 
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
