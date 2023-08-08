@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -13,3 +15,11 @@ class Subscription(models.Model):
     certainty_array = ArrayField(models.CharField(verbose_name='certainty_array'), default=list)
     subscribe_by = ArrayField(models.CharField(verbose_name="subscribe_by"), default=list)
     sent_flag = models.IntegerField(default=0, verbose_name="sent_flag")
+
+    def subscription_alerts_to_dict(self):
+        alerts_list = []
+        alerts = self.alert_set.all()
+
+        for alert in alerts:
+            alerts_list.append(json.loads(alert.serialised_string))
+        return alerts_list
