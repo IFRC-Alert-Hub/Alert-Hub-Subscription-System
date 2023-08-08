@@ -12,11 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
-from dotenv import load_dotenv
 
 # Load environment variables for .env file
 dotenv_file = Path(__file__).resolve().parent.parent / '.env'
-load_dotenv(dotenv_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
