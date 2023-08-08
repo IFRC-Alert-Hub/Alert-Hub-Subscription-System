@@ -3,15 +3,14 @@ from django.db import models
 from subscription_dir.models import Subscription
 from django.contrib.postgres.fields import ArrayField
 from subscription_manager_dir.external_alert_models import CapFeedAlert
+
+class Alert(models.Model):
+    id = models.IntegerField(primary_key=True)
+    subscriptions = models.ManyToManyField(Subscription,through="SubscriptionAlerts")
+    serialised_string = models.CharField(max_length=255)
+
 class SubscriptionAlerts(models.Model):
-    subscription = models.OneToOneField(Subscription, primary_key=True, on_delete=models.CASCADE)
-    alert_ids = ArrayField(models.IntegerField(verbose_name='alert_ids'), default=list)
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+    alert = models.ForeignKey(Alert, on_delete=models.CASCADE)
 
-    def subscription_alerts_to_dict(self):
-        alerts_list = []
-        alert_ids = self.alert_ids
 
-        for alert_id in alert_ids:
-            alert = CapFeedAlert.objects.get(id=alert_id)
-            alerts_list.append(alert.to_dict())
-        return alerts_list

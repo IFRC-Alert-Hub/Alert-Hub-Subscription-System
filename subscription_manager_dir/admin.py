@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SubscriptionAlerts
+from .models import SubscriptionAlerts, Alert
 from .external_alert_models import CapFeedAdmin1, CapFeedAlert, CapFeedAlertadmin1, \
     CapFeedAlertinfo, CapFeedCountry
 
@@ -12,6 +12,8 @@ class AlertAdmin1Inline(admin.StackedInline):
 class AlertInfoInline(admin.StackedInline):
     model = CapFeedAlertinfo
     extra = 0
+
+
 
 
 class AlertAdmin(admin.ModelAdmin):
@@ -28,3 +30,4 @@ admin.site.register(CapFeedAlertadmin1)
 admin.site.register(CapFeedAlertinfo)
 admin.site.register(CapFeedCountry)
 admin.site.register(SubscriptionAlerts)
+admin.site.register(Alert)

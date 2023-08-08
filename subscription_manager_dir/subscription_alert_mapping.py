@@ -1,16 +1,16 @@
+import json
+
 from .external_alert_models import *
 from subscription_dir.models import Subscription
 from .models import *
+
+
 def map_alerts_to_subscription():
     for subscription in Subscription.objects.all():
-        if not hasattr(subscription, 'subscriptionalerts'):
-            map_alert_to_subscription(subscription)
-        else:
-            pass
+        map_alert_to_subscription(subscription)
 
 
 def map_alert_to_subscription(subscription):
-    alert_ids = []
     for id in subscription.district_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=id).first()
         potential_alert_set = admin1.capfeedalert_set.all()
@@ -18,11 +18,15 @@ def map_alert_to_subscription(subscription):
         for alert in potential_alert_set:
             first_info = alert.capfeedalertinfo_set.first()
             if first_info.severity in subscription.severity_array and \
-            first_info.certainty in subscription.certainty_array and \
-            first_info.urgency in subscription.urgency_array:
-                alert_ids.append(alert.id)
+                    first_info.certainty in subscription.certainty_array and \
+                    first_info.urgency in subscription.urgency_array:
+                internal_alert = Alert.objects.filter(id=alert.id).first()
+                if internal_alert is None:
+                    internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
+                        alert.to_dict()))
+                    internal_alert.save()
+                internal_alert.subscriptions.add(subscription)
 
-    SubscriptionAlerts.objects.create(alert_ids=alert_ids,subscription=subscription).save()
 
 def print_all_admin1s_in_country(id):
     ids = []
