@@ -9,6 +9,7 @@ from django.contrib.messages.middleware import (
 from django.contrib.sessions.middleware import (
     SessionMiddleware as DjangoSessionMiddleware,
 )
+from django.http import JsonResponse
 from graphql_jwt.settings import jwt_settings
 
 
@@ -57,8 +58,22 @@ class DeleteJWTMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        response = self.get_response(request)
-        return self.process_response(request, response)
+        try:
+            response = self.get_response(request)
+        except Exception as e:
+            if "NoneType object has no attribute 'is_authenticated'" in str(e):
+                if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
+                    request.delete_jwt_cookie = True
+                response = JsonResponse({'error': 'Invalid token provided. Please login again.'},
+                                        status=401)
+
+        if response is None:
+            response = JsonResponse({'error': 'Unknown error'}, status=500)
+
+        if hasattr(request, 'delete_jwt_cookie') and request.delete_jwt_cookie:
+            self.my_delete_cookie(response, jwt_settings.JWT_COOKIE_NAME)
+
+        return response
 
     def process_response(self, request, response):
         if hasattr(request, 'delete_jwt_cookie') and request.delete_jwt_cookie:
