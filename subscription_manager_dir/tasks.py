@@ -1,5 +1,6 @@
 # pylint: disable=R0801
 from collections import defaultdict
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -39,11 +40,11 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
 
 
 @shared_task
-def process_non_immediate_alerts():
+def process_non_immediate_alerts(sent_flag):
     from .models import Subscription, SubscriptionAlerts
 
     user = get_user_model()
-    subscriptions = Subscription.objects.all()
+    subscriptions = Subscription.objects.filter(sent_flag=sent_flag)
 
     for subscription in subscriptions:
         subscription_id = subscription.id
