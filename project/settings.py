@@ -37,6 +37,10 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'subscription_manager_dir',
+    'subscription_dir',
+    'polygon_dir',
+    'user_dir',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,11 +51,6 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_celery_beat',
     "corsheaders",
-    'polygon_dir',
-    'user_dir',
-    'subscription_dir',
-    'subscription_manager_dir',
-
 ]
 
 MIDDLEWARE = [

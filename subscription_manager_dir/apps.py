@@ -17,12 +17,13 @@ class SubscriptionManagerConfig(AppConfig):
     name = 'subscription_manager_dir'
 
     def ready(self):
-        if 'WEBSITE_HOSTNAME' in os.environ or \
+        if ('WEBSITE_HOSTNAME' in os.environ and 'migrate' not in sys.argv and 'collectstatic' not in sys.argv) \
+                or \
             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-            from .subscription_alert_mapping import map_alerts_to_subscription
-            from .cache import cache_subscriptions_alert
-            result = cache.add('locked', True, timeout=5)
+            result = cache.add('locked', True, timeout=60)
             if result:
+                from .subscription_alert_mapping import map_alerts_to_subscription
+                from .cache import cache_subscriptions_alert
                 map_alerts_to_subscription()
                 cache_subscriptions_alert()
 
