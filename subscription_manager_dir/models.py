@@ -12,5 +12,6 @@ class Alert(models.Model):
 class SubscriptionAlerts(models.Model):
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     alert = models.ForeignKey(Alert, on_delete=models.CASCADE)
+    sent = models.BooleanField(default=False)
 
 

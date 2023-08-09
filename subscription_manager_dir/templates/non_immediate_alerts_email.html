@@ -2,30 +2,18 @@
 <html>
 <head>
     <title>Subscription Email</title>
+    <style>
+        .field-style {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Subscription Alerts</h1>
-    <h2>Hello {{ user.email }},</h2>
-    <p>Here are the details of the alerts matching your subscription:</p>
-    {% for alert in alerts %}
-        <ul>
-            <li><strong>Country:</strong> {{ alert.country_name }}</li>
-            <li><strong>Severity:</strong> {{ alert.severity }}</li>
-            <li><strong>Certainty:</strong> {{ alert.certainty }}</li>
-            <li><strong>Urgency:</strong> {{ alert.urgency }}</li>
-            <li><strong>Source Feed:</strong> {{ alert.source_feed }}</li>
-            <li><strong>Scope:</strong> {{ alert.scope }}</li>
-            {% for each_info in alert.info %}
-                <li><strong>Headline: </strong> {{ each_info.headline }}</li>
-                <li><strong>Alert Information in Language: </strong> {{ each_info.language }}</li>
-                <li><strong>Category: </strong> {{ each_info.category }}</li>
-                <li><strong>Description: </strong> {{ each_info.description }}</li>
-                <li><strong>Headline: </strong> {{ each_info.headline }}</li>
-                <li><strong>Instruction:  </strong> {{ each_info.instruction }}</li>
-            {% endfor %}
-            <!-- Add more alert details as needed -->
-        </ul>
-        <hr/>
-    {% endfor %}
+<h1>Subscription Alerts</h1>
+<h2>Hello {{ user.email }},</h2>
+<p>Here are <span class="field-style">{{ count }}</span> new incoming alerts matching your
+    subscription <span class="field-style">{{ title }}</span></p>
+<p>Please <a href="{{ viewer_link }}">click here</a> to view them</p>
+
 </body>
 </html>

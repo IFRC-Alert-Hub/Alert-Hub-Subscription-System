@@ -18,7 +18,7 @@ app = Celery('project')
 app.conf.beat_schedule = {
     'process-non-immediate-alerts-every-12-hours': {
         'task': 'subscription_manager_dir.tasks.process_non_immediate_alerts',
-        'schedule': timedelta(hours=12),
+        'schedule': timedelta(minutes=1),
     },
 }
 # Using a string here means the worker doesn't have to serialize

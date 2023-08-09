@@ -12,23 +12,6 @@ from project import settings
 
 
 @shared_task(bind=True)
-def send_mail_fun(self):
-    users = get_user_model().objects.all()
-    for user in users:
-        mail_subject = "xxx"
-        message = "xxxxx"
-        to_email = user.email
-        send_mail(
-            subject=mail_subject,
-            message=message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[to_email],
-            fail_silently=True,
-        )
-    return "Done"
-
-
-@shared_task(bind=True)
 def send_subscription_email(self, user_id, subject, template_name, context=None):
     custom_user = get_user_model()
     try:
@@ -46,6 +29,7 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
     send_mail(
         subject=subject,
         message=strip_tags(message),
+        html_message=message,
         from_email=settings.EMAIL_HOST_USER,
         recipient_list=[user.email],
         fail_silently=True,
@@ -56,43 +40,41 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
 
 @shared_task
 def process_non_immediate_alerts():
-    from .models import Alerts
-    users = get_user_model().objects.all()
-    alerts = Alerts.objects.filter(is_sent=False).select_related('user')
-    user_alerts = defaultdict(list)
+    from .models import Subscription, SubscriptionAlerts
 
-    # Group alerts by user
-    for alert in alerts:
-        user_alerts[alert.user_id].append(alert)
+    user = get_user_model()
+    subscriptions = Subscription.objects.all()
 
-    # Send email to each user with their alerts
-    for user in users:
-        if user.id in user_alerts:
-            alerts_for_user = []
-            for alert in user_alerts[user.id]:
-                alerts_for_user.append({
-                    'id': alert.id,
-                    'country_name': alert.country_name,
-                    'country_id': alert.country_id,
-                    'source_feed': alert.source_feed,
-                    'scope': alert.scope,
-                    'urgency': alert.urgency,
-                    'severity': alert.severity,
-                    'certainty': alert.certainty,
-                    'info': alert.info,
-                    'created_at': alert.created_at,
-                })
-            context = {
-                'alerts': alerts_for_user,
-            }
-            send_subscription_email.delay(user.id, 'New Alerts Matching Your Subscription',
-                                          'non_immediate_alerts_email.html', context)
-            Alerts.objects.filter(id__in=[alert.id for alert in user_alerts[user.id]]).update(
-                is_sent=True)
+    for subscription in subscriptions:
+        subscription_id = subscription.id
+        subscription_name = subscription.subscription_name
+        user_id = subscription.user_id
+
+        related_alerts = SubscriptionAlerts.objects.filter(subscription=subscription_id, sent=False)
+
+        if not related_alerts:
+            continue
+
+        related_alerts_count = related_alerts.count()
+
+        viewer_link = "https://alert-hub-frontend.azurewebsites.net/"
+
+        context = {
+            'title': subscription_name,
+            'count': related_alerts_count,
+            'viewer_link': viewer_link,
+        }
+
+        send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
+                                      'non_immediate_alerts_email.html', context)
+
+        related_alerts.update(sent=True)
+
 
 @shared_task
 def get_incoming_alert(alert_id):
     pass
+
 
 @shared_task
 def get_removed_alert(alert_id):
