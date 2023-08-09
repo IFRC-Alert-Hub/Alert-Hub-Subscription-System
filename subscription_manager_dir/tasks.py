@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-
+from .subscription_alert_mapping import map_alerts_to_subscription
+from .cache import cache_subscriptions_alert
 from celery import shared_task
 
 from project import settings
@@ -53,13 +54,13 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
 
     return "Done"
 
-
+'''
 @shared_task
 def process_non_immediate_alerts():
-    from .models import Alerts
-    users = get_user_model().objects.all()
-    alerts = Alerts.objects.filter(is_sent=False).select_related('user')
-    user_alerts = defaultdict(list)
+    #from .models import Alerts
+    #users = get_user_model().objects.all()
+    #alerts = Alerts.objects.filter(is_sent=False).select_related('user')
+    #user_alerts = defaultdict(list)
 
     # Group alerts by user
     for alert in alerts:
@@ -89,7 +90,7 @@ def process_non_immediate_alerts():
                                           'non_immediate_alerts_email.html', context)
             Alerts.objects.filter(id__in=[alert.id for alert in user_alerts[user.id]]).update(
                 is_sent=True)
-
+'''
 @shared_task
 def get_incoming_alert(alert_id):
     pass
@@ -97,3 +98,8 @@ def get_incoming_alert(alert_id):
 @shared_task
 def get_removed_alert(alert_id):
     pass
+
+@shared_task
+def initialise_task():
+    map_alerts_to_subscription()
+    cache_subscriptions_alert()
