@@ -23,7 +23,6 @@ class SubscriptionManagerConfig(AppConfig):
             #from .cache import cache_subscriptions_alert
             result = cache.add('locked', True, timeout=5)
             if result:
-                pass
-                #map_alerts_to_subscription()
-                #cache_subscriptions_alert()
+                map_alerts_to_subscription()
+                cache_subscriptions_alert()
 
