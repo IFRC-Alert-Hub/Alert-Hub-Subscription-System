@@ -22,8 +22,9 @@ class SubscriptionManagerConfig(AppConfig):
             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
             result = cache.add('locked', True, timeout=60)
             if result:
-                from .subscription_alert_mapping import map_alerts_to_subscription
-                from .cache import cache_subscriptions_alert
-                map_alerts_to_subscription()
-                cache_subscriptions_alert()
+                print("????")
+                #from .subscription_alert_mapping import map_alerts_to_subscription
+                #from .cache import cache_subscriptions_alert
+                #map_alerts_to_subscription()
+                #cache_subscriptions_alert()
 
