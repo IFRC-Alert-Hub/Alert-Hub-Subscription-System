@@ -1,6 +1,6 @@
 import os
 
-from .settings import *  # noqa
+from .settings import *
 from .settings import BASE_DIR
 
 # Configure the domain name using the environment variable
@@ -39,9 +39,6 @@ DATABASES = {
         'HOST': subscription_conn_str_params['host'],
         'USER': subscription_conn_str_params['user'],
         'PASSWORD': subscription_conn_str_params['password'],
-        'TEST': {
-            'NAME': 'test',
-        },
     },
     'AlertDB': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -49,6 +46,16 @@ DATABASES = {
         'HOST': alert_conn_str_params['host'],
         'USER': alert_conn_str_params['user'],
         'PASSWORD': alert_conn_str_params['password'],
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get("REDIS_URL"),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
