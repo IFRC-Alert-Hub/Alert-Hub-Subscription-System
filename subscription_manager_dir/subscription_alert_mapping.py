@@ -13,6 +13,8 @@ def map_subscriptions_to_alert():
 def map_subscription_to_alert(subscription):
     for id in subscription.district_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=id).first()
+        if admin1 == None:
+            continue
         potential_alert_set = admin1.capfeedalert_set.all()
 
         for alert in potential_alert_set:
