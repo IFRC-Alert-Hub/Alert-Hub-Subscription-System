@@ -7,8 +7,7 @@ import random
 import time
 
 from django.apps import AppConfig
-from django.db.models.signals import post_save
-from django.core.cache import cache
+
 
 
 
@@ -17,15 +16,15 @@ class SubscriptionManagerConfig(AppConfig):
     name = 'subscription_manager_dir'
 
     def ready(self):
-        #if ('WEBSITE_HOSTNAME' in os.environ and 'migrate' not in sys.argv and 'collectstatic'
-        # not in sys.argv) \
-        #        or \
-        #     ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-        #    result = cache.add('locked', True, timeout=60)
-        #    if result:
-        print("????")
-                #from .subscription_alert_mapping import map_alerts_to_subscription
-                #from .cache import cache_subscriptions_alert
-                #map_alerts_to_subscription()
-                #cache_subscriptions_alert()
+        if ('WEBSITE_HOSTNAME' in os.environ and 'migrate' not in sys.argv and 'collectstatic'
+         not in sys.argv) \
+                or \
+             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
+            from django.core.cache import cache
+            result = cache.add('locked', True, timeout=60)
+            if result:
+                from .subscription_alert_mapping import map_alerts_to_subscription
+                from .cache import cache_subscriptions_alert
+                map_alerts_to_subscription()
+                cache_subscriptions_alert()
 
