@@ -23,8 +23,9 @@ class SubscriptionManagerConfig(AppConfig):
             from django.core.cache import cache
             result = cache.add('locked', True, timeout=60)
             if result:
-                from .subscription_alert_mapping import map_alerts_to_subscription
-                from .cache import cache_subscriptions_alert
-                map_alerts_to_subscription()
-                cache_subscriptions_alert()
+                pass
+                #from .subscription_alert_mapping import map_alerts_to_subscription
+                #from .cache import cache_subscriptions_alert
+                #map_alerts_to_subscription()
+                #cache_subscriptions_alert()
 

@@ -5,12 +5,12 @@ from subscription_dir.models import Subscription
 from .models import *
 
 
-def map_alerts_to_subscription():
+def map_subscriptions_to_alert():
     for subscription in Subscription.objects.all():
-        map_alert_to_subscription(subscription)
+        map_subscription_to_alert(subscription)
 
 
-def map_alert_to_subscription(subscription):
+def map_subscription_to_alert(subscription):
     for id in subscription.district_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=id).first()
         potential_alert_set = admin1.capfeedalert_set.all()
