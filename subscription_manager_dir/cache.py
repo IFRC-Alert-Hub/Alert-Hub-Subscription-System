@@ -10,6 +10,11 @@ def cache_subscription_alert(subscription):
     cache.set("subscription" + str(subscription.id), json.dumps(
         subscription_alerts_dict, indent=None), timeout=None)
 
+def delete_subscription_alerts(subscription_id):
+    return cache.delete("subscription" + str(subscription_id))
 
 def get_subscription_alerts(subscription_id):
+    result = cache.get("subscription" + str(subscription_id))
+    if result == None:
+        return "The Subscription Is Not Existed"
     return cache.get("subscription" + str(subscription_id))
