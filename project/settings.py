@@ -37,8 +37,8 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'subscription_manager_dir',
     'subscription_dir',
+    'subscription_manager_dir',
     'polygon_dir',
     'user_dir',
     'django.contrib.admin',
