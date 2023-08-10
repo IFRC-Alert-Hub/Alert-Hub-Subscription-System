@@ -26,7 +26,7 @@ class TestCase(GraphQLTestCase):
         create_subscription(user_id=1,
                             subscription_name="test_group1",
                             country_ids=[1, 2, 3],
-                            district_ids=[1, 2, 3],
+                            admin1_ids=[1, 2, 3],
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
@@ -36,7 +36,7 @@ class TestCase(GraphQLTestCase):
         create_subscription(user_id=2,
                             subscription_name="test_group2",
                             country_ids=[1, 2, 3],
-                            district_ids=[1, 2, 3],
+                            admin1_ids=[1, 2, 3],
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
@@ -55,7 +55,7 @@ class TestCase(GraphQLTestCase):
               listAllSubscription {
                 certaintyArray
                 countryIds
-                districtIds
+                admin1Ids
                 id
                 sentFlag
                 severityArray
@@ -76,7 +76,7 @@ class TestCase(GraphQLTestCase):
                          'test_group1')
         self.assertEqual(content['data']['listAllSubscription'][0]['countryIds'],
                          [1, 2, 3])
-        self.assertEqual(content['data']['listAllSubscription'][0]['districtIds'],
+        self.assertEqual(content['data']['listAllSubscription'][0]['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['listAllSubscription'][0]['urgencyArray'],
                          ["immediate", "expected"])
@@ -94,7 +94,7 @@ class TestCase(GraphQLTestCase):
             '''
             query {
               listSubscription(countryIds: [2,3], 
-                districtIds: [2,3],
+                admin1Ids: [2,3],
                 urgencyArray: [], 
                 severityArray: [],
                 certaintyArray: []
@@ -103,7 +103,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionName
                 userId
                 countryIds
-                districtIds
+                admin1Ids
                 urgencyArray
                 severityArray
                 certaintyArray
@@ -129,7 +129,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionName
                 userId
                 countryIds
-                districtIds
+                admin1Ids
                 urgencyArray
                 severityArray
                 certaintyArray
@@ -147,7 +147,7 @@ class TestCase(GraphQLTestCase):
                          'test_group1')
         self.assertEqual(content['data']['getSubscription']['countryIds'],
                          [1, 2, 3])
-        self.assertEqual(content['data']['getSubscription']['districtIds'],
+        self.assertEqual(content['data']['getSubscription']['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['getSubscription']['urgencyArray'],
                          ["immediate", "expected"])
@@ -167,7 +167,7 @@ class TestCase(GraphQLTestCase):
               createSubscription (
                 subscriptionName: "test_group3",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
@@ -179,7 +179,7 @@ class TestCase(GraphQLTestCase):
                   subscriptionName
                   userId
                   countryIds
-                  districtIds
+                  admin1Ids
                   urgencyArray
                   severityArray
                   certaintyArray
@@ -198,7 +198,7 @@ class TestCase(GraphQLTestCase):
                          'test_group3')
         self.assertEqual(content['data']['createSubscription']['subscription']['countryIds'],
                          [1, 2, 3])
-        self.assertEqual(content['data']['createSubscription']['subscription']['districtIds'],
+        self.assertEqual(content['data']['createSubscription']['subscription']['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['createSubscription']['subscription']['urgencyArray'],
                          ["immediate", "expected"])
@@ -219,7 +219,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionId: 1
                 subscriptionName: "updated_test_group1",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
@@ -248,7 +248,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionId: 2
                 subscriptionName: "updated_test_group1",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
