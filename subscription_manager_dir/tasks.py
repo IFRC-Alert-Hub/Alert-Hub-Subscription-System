@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from .subscription_alert_mapping import map_subscriptions_to_alert
+from .subscription_alert_mapping import map_subscriptions_to_alert, map_alert_to_subscription
 from .cache import cache_subscriptions_alert
 from celery import shared_task
 
@@ -93,7 +93,7 @@ def process_non_immediate_alerts():
 '''
 @shared_task
 def get_incoming_alert(alert_id):
-    pass
+    return map_alert_to_subscription(alert_id)
 
 @shared_task
 def get_removed_alert(alert_id):
