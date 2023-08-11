@@ -79,3 +79,12 @@ celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
 
+## Others
+
+### Health Check Endpoint
+
+To ensure service availability, the following endpoint can be leveraged for health check:
+
+```bash
+http://$HOST:$PORT/health_check/ 
+```
