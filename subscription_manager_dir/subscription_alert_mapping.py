@@ -52,16 +52,36 @@ def map_alert_to_subscription(alert_id):
                     alert.to_dict()))
             internal_alert.save()
             internal_alert.subscriptions.add(subscription)
+            # Update the cache when related alerts are added
             cache_subscription_alert(subscription)
             updated_subscription_ids.append(subscription.id)
     if len(updated_subscription_ids) != 0:
-        return f"Incoming Alert {alert_id} is succesfully converted. Mapped Subscription id are " \
+        return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription id are " \
         f"{updated_subscription_ids}."
     else:
-        return f"Incoming Alert {alert_id} is succesfully converted."
+        return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
 
+def delete_alert_to_subscription(alert_id):
+    alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
+    if alert_to_be_deleted == None:
+        return f"Alert with id {alert_id} is not converted in subscription database."
 
+    subscriptions = alert_to_be_deleted.subscriptions.all()
+    updated_subscription_ids = []
+    for subscription in subscriptions:
+        subscription.alert_set.remove(alert_to_be_deleted)
+        #Update the cache when related alerts are removed
+        cache_subscription_alert(subscription)
+        updated_subscription_ids.append(subscription.id)
+
+    alert_to_be_deleted.delete()
+    if len(updated_subscription_ids) != 0:
+        return f" Alert {alert_id} is successfully deleted from subscription database. " \
+               f"Updated Subscription id are " \
+        f"{updated_subscription_ids}."
+    else:
+        return f"Alert {alert_id} is successfully deleted from subscription database. "
 
 def print_all_admin1s_in_country(id):
     ids = []

@@ -27,6 +27,7 @@ class Subscription(models.Model):
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
         from subscription_manager_dir import subscription_alert_mapping,cache
         super(Subscription, self).save(force_insert, force_update, *args, **kwargs)
+        self.alert_set.clear()
         subscription_alert_mapping.map_subscription_to_alert(self)
         cache.cache_subscription_alert(self)
 
