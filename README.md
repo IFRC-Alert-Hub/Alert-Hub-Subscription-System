@@ -1,4 +1,4 @@
-# IFRC/UCL Alert Hub backend
+# IFRC/UCL Alert-Hub-Subscription-System
 
 ## Description
 
