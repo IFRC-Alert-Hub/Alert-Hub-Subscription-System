@@ -1,5 +1,6 @@
 import json
 
+from .cache import cache_subscription_alert
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from subscription_dir.models import Subscription
 from .models import *
@@ -51,9 +52,13 @@ def map_alert_to_subscription(alert_id):
                     alert.to_dict()))
             internal_alert.save()
             internal_alert.subscriptions.add(subscription)
-            #Still need to update cache
+            cache_subscription_alert(subscription)
             updated_subscription_ids.append(subscription.id)
-    return updated_subscription_ids
+    if len(updated_subscription_ids) != 0:
+        return f"Incoming Alert {alert_id} is succesfully converted. Mapped Subscription id are " \
+        f"{updated_subscription_ids}."
+    else:
+        return f"Incoming Alert {alert_id} is succesfully converted."
 
 
 
