@@ -7,22 +7,24 @@ import csv
 # # country: foreign key (country iso3)
 # # polygon: polygon string
 
-# INPUT_FILE_PATH = '../TestData/world.geojson'
-INPUT_FILE_PATH = "../TestData/countries/AFG/afg.geojson"
+# input_file_path = '../TestData/world.geojson'
+input_file_path = "../TestData/countries/AFG/afg.geojson"
 
 # Load JSON data from the file
-with open(INPUT_FILE_PATH, "r") as input_file:
+with open(input_file_path, "r") as input_file:
     data = json.load(input_file)
 
 admin1_data = []
 for item in data['features']:
-    admin1_item = {'id': item['properties']['GID_1'], 'name': item['properties']['NAME_1'],
-                   'country': item['properties']['GID_0'],
-                   'polygon': item['geometry']['coordinates']}
+    admin1_item = dict()
+    admin1_item['id'] = item['properties']['GID_1']
+    admin1_item['name'] = item['properties']['NAME_1']
+    admin1_item['country'] = item['properties']['GID_0']
+    admin1_item['polygon'] = item['geometry']['coordinates']
     admin1_data.append(admin1_item)
 
-OUTPUT_FILE_PATH = "../TestData/countries/AFG/afg.csv"
-with open(OUTPUT_FILE_PATH, "x", newline="") as output_file:
+output_file_path = "../TestData/countries/AFG/afg.csv"
+with open(output_file_path, "x", newline="") as output_file:
     fieldnames = ["id", "name", "country", "polygon"]
     writer = csv.DictWriter(output_file,
                             fieldnames=fieldnames)
