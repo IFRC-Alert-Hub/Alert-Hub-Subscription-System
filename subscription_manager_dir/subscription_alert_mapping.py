@@ -12,7 +12,7 @@ def map_subscriptions_to_alert():
 
 
 def map_subscription_to_alert(subscription):
-    for id in subscription.district_ids:
+    for id in subscription.admin1_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=id).first()
         if admin1 == None:
             continue
@@ -40,7 +40,7 @@ def map_alert_to_subscription(alert_id):
     alert_admin1_ids = []
     for admin1 in alert.admin1s.all():
         alert_admin1_ids.append(admin1.id)
-    subscriptions = Subscription.objects.filter(district_ids__overlap=alert_admin1_ids)
+    subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
 
     first_info = alert.capfeedalertinfo_set.first()
     updated_subscription_ids = []
@@ -65,7 +65,7 @@ def map_alert_to_subscription(alert_id):
 def delete_alert_to_subscription(alert_id):
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
     if alert_to_be_deleted == None:
-        return f"Alert with id {alert_id} is not converted in subscription database."
+        return f"Alert with id {alert_id} has not been found in subscription database."
 
     subscriptions = alert_to_be_deleted.subscriptions.all()
     updated_subscription_ids = []
