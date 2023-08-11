@@ -88,3 +88,19 @@ To ensure service availability, the following endpoint can be leveraged for heal
 ```bash
 http://$HOST:$PORT/health_check/ 
 ```
+
+### DB Backup
+
+To ensure data availability, the database can be backup and restored by following command:
+
+1. Run backup
+```bash
+python manage.py dbbackup
+```
+
+2. Restore from backup
+```bash
+python manage.py dbrestore
+```
+
+More description can be referred from [dbbackup description](dbbackup/dbbackup.md).
