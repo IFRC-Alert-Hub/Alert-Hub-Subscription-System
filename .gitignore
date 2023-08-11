@@ -37,3 +37,6 @@ __pycache__/
 
 # redis
 dump.rdb
+
+# postgresql backup
+*.psql.bin
