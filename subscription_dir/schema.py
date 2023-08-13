@@ -7,16 +7,16 @@ from .models import Subscription
 class SubscriptionType(DjangoObjectType):
     class Meta:
         model = Subscription
-        fields = ["id", "subscription_name", "user_id", "country_ids", "district_ids",
+        fields = ["id", "subscription_name", "user_id", "country_ids", "admin1_ids",
                   "urgency_array", "severity_array", "certainty_array", "subscribe_by", "sent_flag"]
 
 
-def create_subscription(user_id, subscription_name, country_ids, district_ids,
+def create_subscription(user_id, subscription_name, country_ids, admin1_ids,
                         urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
     subscription = Subscription(user_id=user_id,
                                 subscription_name=subscription_name,
                                 country_ids=country_ids,
-                                district_ids=district_ids,
+                                admin1_ids=admin1_ids,
                                 urgency_array=urgency_array,
                                 severity_array=severity_array,
                                 certainty_array=certainty_array,
@@ -30,7 +30,7 @@ class CreateSubscription(graphene.Mutation):
     class Arguments:
         subscription_name = graphene.String(required=True)
         country_ids = graphene.List(graphene.Int)
-        district_ids = graphene.List(graphene.Int)
+        admin1_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
         severity_array = graphene.List(graphene.String)
         certainty_array = graphene.List(graphene.String)
@@ -40,12 +40,12 @@ class CreateSubscription(graphene.Mutation):
     subscription = graphene.Field(SubscriptionType)
 
     @login_required
-    def mutate(self, info, subscription_name, country_ids, district_ids,
+    def mutate(self, info, subscription_name, country_ids, admin1_ids,
                urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
         subscription = create_subscription(info.context.user.id,
                                            subscription_name,
                                            country_ids,
-                                           district_ids,
+                                           admin1_ids,
                                            urgency_array,
                                            severity_array,
                                            certainty_array,
@@ -79,7 +79,7 @@ class UpdateSubscription(graphene.Mutation):
         subscription_id = graphene.Int(required=True)
         subscription_name = graphene.String(required=True)
         country_ids = graphene.List(graphene.Int)
-        district_ids = graphene.List(graphene.Int)
+        admin1_ids = graphene.List(graphene.Int)
         urgency_array = graphene.List(graphene.String)
         severity_array = graphene.List(graphene.String)
         certainty_array = graphene.List(graphene.String)
@@ -90,7 +90,7 @@ class UpdateSubscription(graphene.Mutation):
     error_message = graphene.String()
 
     def mutate(self, info, subscription_id, subscription_name,
-               country_ids, district_ids,
+               country_ids, admin1_ids,
                urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
         subscription = Subscription.objects.get(id=subscription_id)
         login_user_id = info.context.user.id
@@ -100,7 +100,7 @@ class UpdateSubscription(graphene.Mutation):
                                                     'to this user.')
         subscription.subscription_name = subscription_name
         subscription.country_ids = country_ids
-        subscription.district_ids = district_ids
+        subscription.admin1_ids = admin1_ids
         subscription.urgency_array = urgency_array
         subscription.severity_array = severity_array
         subscription.certainty_array = certainty_array
@@ -120,7 +120,7 @@ class Query(graphene.ObjectType):
     list_all_subscription = graphene.List(SubscriptionType)
     list_subscription = graphene.List(SubscriptionType,
                                       country_ids=graphene.List(graphene.Int),
-                                      district_ids=graphene.List(graphene.Int),
+                                      admin1_ids=graphene.List(graphene.Int),
                                       urgency_array=graphene.List(graphene.String),
                                       severity_array=graphene.List(graphene.String),
                                       certainty_array=graphene.List(graphene.String))
@@ -131,16 +131,14 @@ class Query(graphene.ObjectType):
     def resolve_list_all_subscription(self, info):
         return Subscription.objects.filter(user_id=info.context.user.id).order_by('-id')
 
-
-    def resolve_list_subscription(self, info, country_ids, district_ids,
+    def resolve_list_subscription(self, info, country_ids, admin1_ids,
                                   urgency_array, severity_array, certainty_array):
         return Subscription.objects.filter(country_ids__contains=country_ids,
-                                           district_ids__contains=district_ids,
+                                           admin1_ids__contains=admin1_ids,
                                            urgency_array__contains=urgency_array,
                                            severity_array__contains=severity_array,
                                            certainty_array__contains=certainty_array)\
             .order_by('-id')
-
 
     def resolve_get_subscription(self, info, subscription_id):
         return Subscription.objects.get(id=subscription_id)

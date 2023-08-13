@@ -22,11 +22,29 @@ class TestCase(GraphQLTestCase):
         cls.user = user.objects.create_user(email='test1@example.com', password='testpassword')
         # Create another user
         cls.user = user.objects.create_user(email='test2@example.com', password='testpassword')
-        # Create a subscription for user 1
+        # Create subscriptions for user 1
         create_subscription(user_id=1,
                             subscription_name="test_group1",
                             country_ids=[1, 2, 3],
-                            district_ids=[1, 2, 3],
+                            admin1_ids=[1, 2, 3],
+                            urgency_array=["immediate"],
+                            severity_array=["severe"],
+                            certainty_array=["observed"],
+                            subscribe_by=["sms", "email"],
+                            sent_flag=0)
+        create_subscription(user_id=1,
+                            subscription_name="test_group1",
+                            country_ids=[1],
+                            admin1_ids=[1],
+                            urgency_array=["expected"],
+                            severity_array=["extreme"],
+                            certainty_array=["likely"],
+                            subscribe_by=["sms", "email"],
+                            sent_flag=0)
+        create_subscription(user_id=1,
+                            subscription_name="test_group1",
+                            country_ids=[2, 3],
+                            admin1_ids=[2, 3],
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
@@ -36,7 +54,7 @@ class TestCase(GraphQLTestCase):
         create_subscription(user_id=2,
                             subscription_name="test_group2",
                             country_ids=[1, 2, 3],
-                            district_ids=[1, 2, 3],
+                            admin1_ids=[1, 2, 3],
                             urgency_array=["immediate", "expected"],
                             severity_array=["severe", "extreme"],
                             certainty_array=["observed", "likely"],
@@ -55,7 +73,7 @@ class TestCase(GraphQLTestCase):
               listAllSubscription {
                 certaintyArray
                 countryIds
-                districtIds
+                admin1Ids
                 id
                 sentFlag
                 severityArray
@@ -70,14 +88,14 @@ class TestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['listAllSubscription']), 1)
-        self.assertEqual(content['data']['listAllSubscription'][0]['id'], '1')
+        self.assertEqual(len(content['data']['listAllSubscription']), 3)
+        self.assertEqual(content['data']['listAllSubscription'][0]['id'], '3')
         self.assertEqual(content['data']['listAllSubscription'][0]['subscriptionName'],
                          'test_group1')
         self.assertEqual(content['data']['listAllSubscription'][0]['countryIds'],
-                         [1, 2, 3])
-        self.assertEqual(content['data']['listAllSubscription'][0]['districtIds'],
-                         [1, 2, 3])
+                         [2, 3])
+        self.assertEqual(content['data']['listAllSubscription'][0]['admin1Ids'],
+                         [2, 3])
         self.assertEqual(content['data']['listAllSubscription'][0]['urgencyArray'],
                          ["immediate", "expected"])
         self.assertEqual(content['data']['listAllSubscription'][0]['severityArray'],
@@ -88,13 +106,13 @@ class TestCase(GraphQLTestCase):
                          ["sms", "email"])
         self.assertEqual(content['data']['listAllSubscription'][0]['sentFlag'], 0)
 
-    # Test query for list subscriptions by filters
-    def test_query_list_subscription(self):
+    # Test query for list subscriptions by countryId filters
+    def test_query_list_subscription_by_country_ids(self):
         response = self.query(
             '''
             query {
               listSubscription(countryIds: [2,3], 
-                districtIds: [2,3],
+                admin1Ids: [],
                 urgencyArray: [], 
                 severityArray: [],
                 certaintyArray: []
@@ -103,7 +121,325 @@ class TestCase(GraphQLTestCase):
                 subscriptionName
                 userId
                 countryIds
-                districtIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+    # Test query for list subscriptions by admin1Ids filters
+    def test_query_list_subscription_by_admin1_ids(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [2,3],
+                urgencyArray: [], 
+                severityArray: [],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+    # Test query for list subscriptions by urgencyArray filters
+    def test_query_list_subscription_by_urgency_array(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: ["immediate"], 
+                severityArray: [],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: ["immediate", "expected"], 
+                severityArray: [],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: ["hello_world"], 
+                severityArray: [],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 0)
+
+    # Test query for list subscriptions by severityArray filters
+    def test_query_list_subscription_by_severity_array(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: ["severe"],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: ["severe", "extreme"],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: ["hello_world"],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 0)
+
+    # Test query for list subscriptions by certaintyArray filters
+    def test_query_list_subscription_by_certainty_array(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: [],
+                certaintyArray: ["observed"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: [],
+                certaintyArray: ["observed", "likely"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: [],
+                certaintyArray: ["hello_world"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 0)
+
+    # Test query for list subscriptions with filter combinations
+    def test_query_list_subscription_with_filter_combinations(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [2,3],
+                urgencyArray: ["immediate", "expected"], 
+                severityArray: ["severe"],
+                certaintyArray: ["observed"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
                 urgencyArray
                 severityArray
                 certaintyArray
@@ -129,7 +465,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionName
                 userId
                 countryIds
-                districtIds
+                admin1Ids
                 urgencyArray
                 severityArray
                 certaintyArray
@@ -147,14 +483,14 @@ class TestCase(GraphQLTestCase):
                          'test_group1')
         self.assertEqual(content['data']['getSubscription']['countryIds'],
                          [1, 2, 3])
-        self.assertEqual(content['data']['getSubscription']['districtIds'],
+        self.assertEqual(content['data']['getSubscription']['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['getSubscription']['urgencyArray'],
-                         ["immediate", "expected"])
+                         ["immediate"])
         self.assertEqual(content['data']['getSubscription']['severityArray'],
-                         ["severe", "extreme"])
+                         ["severe"])
         self.assertEqual(content['data']['getSubscription']['certaintyArray'],
-                         ["observed", "likely"])
+                         ["observed"])
         self.assertEqual(content['data']['getSubscription']['subscribeBy'],
                          ["sms", "email"])
         self.assertEqual(content['data']['getSubscription']['sentFlag'], 0)
@@ -167,7 +503,7 @@ class TestCase(GraphQLTestCase):
               createSubscription (
                 subscriptionName: "test_group3",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
@@ -179,7 +515,7 @@ class TestCase(GraphQLTestCase):
                   subscriptionName
                   userId
                   countryIds
-                  districtIds
+                  admin1Ids
                   urgencyArray
                   severityArray
                   certaintyArray
@@ -193,12 +529,12 @@ class TestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertEqual(content['data']['createSubscription']['subscription']['id'], '3')
+        self.assertEqual(content['data']['createSubscription']['subscription']['id'], '5')
         self.assertEqual(content['data']['createSubscription']['subscription']['subscriptionName'],
                          'test_group3')
         self.assertEqual(content['data']['createSubscription']['subscription']['countryIds'],
                          [1, 2, 3])
-        self.assertEqual(content['data']['createSubscription']['subscription']['districtIds'],
+        self.assertEqual(content['data']['createSubscription']['subscription']['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['createSubscription']['subscription']['urgencyArray'],
                          ["immediate", "expected"])
@@ -219,7 +555,7 @@ class TestCase(GraphQLTestCase):
                 subscriptionId: 1
                 subscriptionName: "updated_test_group1",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
@@ -245,10 +581,10 @@ class TestCase(GraphQLTestCase):
             '''
             mutation {
               updateSubscription (
-                subscriptionId: 2
+                subscriptionId: 4
                 subscriptionName: "updated_test_group1",
                 countryIds: [1,2,3],
-                districtIds: [1,2,3],
+                admin1Ids: [1,2,3],
                 urgencyArray: ["immediate","expected"],
                 severityArray: ["severe", "extreme"],
                 certaintyArray: ["observed","likely"],
@@ -293,7 +629,7 @@ class TestCase(GraphQLTestCase):
             '''
             mutation {
               deleteSubscription (
-                subscriptionId: 2
+                subscriptionId: 4
               ){
                 success
                 errorMessage
