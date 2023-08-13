@@ -13,4 +13,6 @@ disable=
     W1201, # logging-not-lazy
     R1722, # consider-using-sys-exit
     W0246, # useless-parent-delegation
-    W1514, # unspecified-encoding 
+    W1514, # unspecified-encoding
+    W0718, # broad-exception-caught
+    R0401, # cyclic-import

@@ -2,8 +2,7 @@ import json
 
 from .cache import cache_subscription_alert
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
-from subscription_dir.models import Subscription
-from .models import *
+from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
 
 
@@ -13,9 +12,9 @@ def map_subscriptions_to_alert():
 
 
 def map_subscription_to_alert(subscription):
-    for id in subscription.admin1_ids:
-        admin1 = CapFeedAdmin1.objects.filter(id=id).first()
-        if admin1 == None:
+    for admin1_id in subscription.admin1_ids:
+        admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
+        if admin1 is None:
             continue
         potential_alert_set = admin1.capfeedalert_set.all()
 
@@ -37,16 +36,15 @@ def map_subscription_to_alert(subscription):
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id).first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
-    if alert == None:
+    if alert is None:
         return f"Alert with id {alert_id} is not existed"
-    if converted_alert != None:
+    if converted_alert is not None:
         return f"Alert with id {alert_id} is already converted and matched subscription"
     alert_admin1_ids = []
     for admin1 in alert.admin1s.all():
         alert_admin1_ids.append(admin1.id)
     subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
 
-    first_info = alert.capfeedalertinfo_set.first()
     updated_subscription_ids = []
     for subscription in subscriptions:
         for info in alert.capfeedalertinfo_set.all():
@@ -68,13 +66,13 @@ def map_alert_to_subscription(alert_id):
     if len(updated_subscription_ids) != 0:
         return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription id are " \
                f"{updated_subscription_ids}."
-    else:
-        return f"Incoming Alert {alert_id} is not mapped with any subscription."
+
+    return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
 
 def delete_alert_to_subscription(alert_id):
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
-    if alert_to_be_deleted == None:
+    if alert_to_be_deleted is None:
         return f"Alert with id {alert_id} has not been found in subscription database."
 
     subscriptions = alert_to_be_deleted.subscriptions.all()
@@ -90,12 +88,12 @@ def delete_alert_to_subscription(alert_id):
         return f" Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \
                f"{updated_subscription_ids}."
-    else:
-        return f"Alert {alert_id} is successfully deleted from subscription database. "
+
+    return f"Alert {alert_id} is successfully deleted from subscription database. "
 
 
-def print_all_admin1s_in_country(id):
+def print_all_admin1s_in_country(country_id):
     ids = []
-    admin1s = CapFeedAdmin1.objects.filter(country__id=id)
+    admin1s = CapFeedAdmin1.objects.filter(country__id=country_id)
     for admin in admin1s:
         ids.append(admin.id)

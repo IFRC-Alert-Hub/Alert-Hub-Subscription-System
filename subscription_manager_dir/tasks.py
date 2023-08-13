@@ -1,16 +1,15 @@
 # pylint: disable=R0801
 import json
-from collections import defaultdict
-from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-from .cache import cache_subscriptions_alert
-from celery import shared_task
 
+from celery import shared_task
 from project import settings
+from .cache import cache_subscriptions_alert
+
 
 
 @shared_task(bind=True)
