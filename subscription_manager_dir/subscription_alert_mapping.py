@@ -4,6 +4,7 @@ from .cache import cache_subscription_alert
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from subscription_dir.models import Subscription
 from .models import *
+from .tasks import process_immediate_alerts
 
 
 def map_subscriptions_to_alert():
@@ -21,15 +22,17 @@ def map_subscription_to_alert(subscription):
         for alert in potential_alert_set:
             for info in alert.capfeedalertinfo_set.all():
                 if info.severity in subscription.severity_array and \
-                    info.certainty in subscription.certainty_array and \
-                    info.urgency in subscription.urgency_array:
+                        info.certainty in subscription.certainty_array and \
+                        info.urgency in subscription.urgency_array:
                     internal_alert = Alert.objects.filter(id=alert.id).first()
                     if internal_alert is None:
-                        internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
-                        alert.to_dict()))
+                        internal_alert = Alert.objects.create(id=alert.id,
+                                                              serialised_string=json.dumps(
+                                                                  alert.to_dict()))
                         internal_alert.save()
                     internal_alert.subscriptions.add(subscription)
                     break
+
 
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id).first()
@@ -48,8 +51,8 @@ def map_alert_to_subscription(alert_id):
     for subscription in subscriptions:
         for info in alert.capfeedalertinfo_set.all():
             if info.severity in subscription.severity_array and \
-                info.certainty in subscription.certainty_array and \
-                info.urgency in subscription.urgency_array:
+                    info.certainty in subscription.certainty_array and \
+                    info.urgency in subscription.urgency_array:
                 internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
                     alert.to_dict()))
                 internal_alert.save()
@@ -58,9 +61,13 @@ def map_alert_to_subscription(alert_id):
                 cache_subscription_alert(subscription)
                 updated_subscription_ids.append(subscription.id)
                 break
+
+        if subscription.sent_flag == 0:
+            process_immediate_alerts(subscription.id)
+
     if len(updated_subscription_ids) != 0:
         return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription id are " \
-        f"{updated_subscription_ids}."
+               f"{updated_subscription_ids}."
     else:
         return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
@@ -74,7 +81,7 @@ def delete_alert_to_subscription(alert_id):
     updated_subscription_ids = []
     for subscription in subscriptions:
         subscription.alert_set.remove(alert_to_be_deleted)
-        #Update the cache when related alerts are removed
+        # Update the cache when related alerts are removed
         cache_subscription_alert(subscription)
         updated_subscription_ids.append(subscription.id)
 
@@ -82,9 +89,10 @@ def delete_alert_to_subscription(alert_id):
     if len(updated_subscription_ids) != 0:
         return f" Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \
-        f"{updated_subscription_ids}."
+               f"{updated_subscription_ids}."
     else:
         return f"Alert {alert_id} is successfully deleted from subscription database. "
+
 
 def print_all_admin1s_in_country(id):
     ids = []
