@@ -131,7 +131,6 @@ class Query(graphene.ObjectType):
     def resolve_list_all_subscription(self, info):
         return Subscription.objects.filter(user_id=info.context.user.id).order_by('-id')
 
-
     def resolve_list_subscription(self, info, country_ids, admin1_ids,
                                   urgency_array, severity_array, certainty_array):
         return Subscription.objects.filter(country_ids__contains=country_ids,
@@ -140,7 +139,6 @@ class Query(graphene.ObjectType):
                                            severity_array__contains=severity_array,
                                            certainty_array__contains=certainty_array)\
             .order_by('-id')
-
 
     def resolve_get_subscription(self, info, subscription_id):
         return Subscription.objects.get(id=subscription_id)

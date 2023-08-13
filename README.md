@@ -79,3 +79,28 @@ celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
 
+## Others
+
+### Health Check Endpoint
+
+To ensure service availability, the following endpoint can be leveraged for health check:
+
+```bash
+http://$HOST:$PORT/health_check/ 
+```
+
+### DB Backup
+
+To ensure data availability, the database can be backup and restored by following command:
+
+1. Run backup
+```bash
+python manage.py dbbackup
+```
+
+2. Restore from backup
+```bash
+python manage.py dbrestore
+```
+
+More description can be referred from [dbbackup description](dbbackup/dbbackup.md).

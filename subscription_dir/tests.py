@@ -27,18 +27,18 @@ class TestCase(GraphQLTestCase):
                             subscription_name="test_group1",
                             country_ids=[1, 2, 3],
                             admin1_ids=[1, 2, 3],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
+                            urgency_array=["immediate"],
+                            severity_array=["severe"],
+                            certainty_array=["observed"],
                             subscribe_by=["sms", "email"],
                             sent_flag=0)
         create_subscription(user_id=1,
                             subscription_name="test_group1",
                             country_ids=[1],
                             admin1_ids=[1],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
+                            urgency_array=["expected"],
+                            severity_array=["extreme"],
+                            certainty_array=["likely"],
                             subscribe_by=["sms", "email"],
                             sent_flag=0)
         create_subscription(user_id=1,
@@ -194,7 +194,35 @@ class TestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['listSubscription']), 4)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: ["immediate", "expected"], 
+                severityArray: [],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
 
         response = self.query(
             '''
@@ -252,7 +280,35 @@ class TestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['listSubscription']), 4)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: ["severe", "extreme"],
+                certaintyArray: []
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
 
         response = self.query(
             '''
@@ -310,7 +366,35 @@ class TestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['listSubscription']), 4)
+        self.assertEqual(len(content['data']['listSubscription']), 3)
+
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [],
+                urgencyArray: [], 
+                severityArray: [],
+                certaintyArray: ["observed", "likely"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
 
         response = self.query(
             '''
@@ -339,6 +423,36 @@ class TestCase(GraphQLTestCase):
 
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['listSubscription']), 0)
+
+    # Test query for list subscriptions with filter combinations
+    def test_query_list_subscription_with_filter_combinations(self):
+        response = self.query(
+            '''
+            query {
+              listSubscription(countryIds: [], 
+                admin1Ids: [2,3],
+                urgencyArray: ["immediate", "expected"], 
+                severityArray: ["severe"],
+                certaintyArray: ["observed"]
+              ) {
+                id
+                subscriptionName
+                userId
+                countryIds
+                admin1Ids
+                urgencyArray
+                severityArray
+                certaintyArray
+                subscribeBy
+                sentFlag
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['listSubscription']), 2)
 
     # Test query for get subscription by id
     def test_query_get_subscription(self):
@@ -372,11 +486,11 @@ class TestCase(GraphQLTestCase):
         self.assertEqual(content['data']['getSubscription']['admin1Ids'],
                          [1, 2, 3])
         self.assertEqual(content['data']['getSubscription']['urgencyArray'],
-                         ["immediate", "expected"])
+                         ["immediate"])
         self.assertEqual(content['data']['getSubscription']['severityArray'],
-                         ["severe", "extreme"])
+                         ["severe"])
         self.assertEqual(content['data']['getSubscription']['certaintyArray'],
-                         ["observed", "likely"])
+                         ["observed"])
         self.assertEqual(content['data']['getSubscription']['subscribeBy'],
                          ["sms", "email"])
         self.assertEqual(content['data']['getSubscription']['sentFlag'], 0)

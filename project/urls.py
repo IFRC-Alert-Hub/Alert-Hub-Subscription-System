@@ -23,6 +23,6 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/admin')),
     path('users/', include('user_dir.urls')),
     path('subscription/', include('subscription_dir.urls')),
-    path('polygon/', include('polygon_dir.urls')),
-    path('subscription_manager/', include('subscription_manager_dir.urls'))
+    path('subscription_manager/', include('subscription_manager_dir.urls')),
+    path('health_check/', include('health_check.urls'))
 ]
