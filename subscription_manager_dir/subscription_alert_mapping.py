@@ -44,15 +44,17 @@ def map_alert_to_subscription(alert_id):
     subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
 
     first_info = alert.capfeedalertinfo_set.first()
+    internal_alert = None
     updated_subscription_ids = []
     for subscription in subscriptions:
         for info in alert.capfeedalertinfo_set.all():
             if info.severity in subscription.severity_array and \
                 info.certainty in subscription.certainty_array and \
                 info.urgency in subscription.urgency_array:
-                internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
-                    alert.to_dict()))
-                internal_alert.save()
+                if internal_alert == None:
+                    internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
+                        alert.to_dict()))
+                    internal_alert.save()
                 internal_alert.subscriptions.add(subscription)
                 # Update the cache when related alerts are added
                 cache_subscription_alert(subscription)
