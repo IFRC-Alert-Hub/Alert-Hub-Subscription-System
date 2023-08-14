@@ -53,7 +53,7 @@ jobs:
       run: python manage.py migrate
     - name: Check Style
       run: |
-        pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
+        python -c "from dotenv import load_dotenv; load_dotenv();" && pylint --load-plugins pylint_django --django-settings-module=project.settings *_dir
     - name: Run Tests with Coverage
       run: |
         coverage run --source='.' manage.py test

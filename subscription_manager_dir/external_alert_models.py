@@ -67,6 +67,3 @@ class CapFeedAlertinfo(models.Model):
     class Meta:
         managed = False
         db_table = 'cap_feed_alertinfo'
-
-
-
