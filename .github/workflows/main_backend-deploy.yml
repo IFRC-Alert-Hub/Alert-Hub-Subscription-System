@@ -26,12 +26,12 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-
+      
       - name: Install dependencies
         run: pip install -r requirements.txt
-
+        
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
+      
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
         with:
@@ -52,9 +52,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: python-app
-          path: |
-            .
-            !testsuit/
+          path: .
           
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
@@ -62,4 +60,4 @@ jobs:
         with:
           app-name: 'backend-deploy'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2053317864F147AAA381CDDCC26D3538 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_85D6C0F637D84810AA47FF0332BF14E3 }}
