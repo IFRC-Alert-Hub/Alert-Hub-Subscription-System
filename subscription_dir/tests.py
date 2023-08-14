@@ -1,7 +1,10 @@
 import json
+from unittest.mock import patch
+
 from graphene_django.utils.testing import GraphQLTestCase
 from django.test import Client
 from django.contrib.auth import get_user_model
+
 from .models import Subscription
 from .schema import create_subscription
 
@@ -10,8 +13,12 @@ def get_subscription(subscription_id):
     return Subscription.objects.get(id=subscription_id)
 
 
+def mock_save(self, *args, **kwargs):
+    super(Subscription, self).save(*args, **kwargs)
+
+
+@patch.object(Subscription, 'save', mock_save)
 class TestCase(GraphQLTestCase):
-    databases = "__all__"
     GRAPHQL_URL = "/subscription/graphql"
     client = Client()
 
@@ -23,44 +30,45 @@ class TestCase(GraphQLTestCase):
         cls.user = user.objects.create_user(email='test1@example.com', password='testpassword')
         # Create another user
         cls.user = user.objects.create_user(email='test2@example.com', password='testpassword')
-        # Create subscriptions for user 1
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[1, 2, 3],
-                            admin1_ids=[1, 2, 3],
-                            urgency_array=["immediate"],
-                            severity_array=["severe"],
-                            certainty_array=["observed"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[1],
-                            admin1_ids=[1],
-                            urgency_array=["expected"],
-                            severity_array=["extreme"],
-                            certainty_array=["likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[2, 3],
-                            admin1_ids=[2, 3],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        # Create a subscription for user 2
-        create_subscription(user_id=2,
-                            subscription_name="test_group2",
-                            country_ids=[1, 2, 3],
-                            admin1_ids=[1, 2, 3],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
+        with patch.object(Subscription, 'save', mock_save):
+            # Create subscriptions for user 1
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[1, 2, 3],
+                                admin1_ids=[1, 2, 3],
+                                urgency_array=["immediate"],
+                                severity_array=["severe"],
+                                certainty_array=["observed"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[1],
+                                admin1_ids=[1],
+                                urgency_array=["expected"],
+                                severity_array=["extreme"],
+                                certainty_array=["likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[2, 3],
+                                admin1_ids=[2, 3],
+                                urgency_array=["immediate", "expected"],
+                                severity_array=["severe", "extreme"],
+                                certainty_array=["observed", "likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            # Create a subscription for user 2
+            create_subscription(user_id=2,
+                                subscription_name="test_group2",
+                                country_ids=[1, 2, 3],
+                                admin1_ids=[1, 2, 3],
+                                urgency_array=["immediate", "expected"],
+                                severity_array=["severe", "extreme"],
+                                certainty_array=["observed", "likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
 
     def setUp(self):
         # Log in the user
