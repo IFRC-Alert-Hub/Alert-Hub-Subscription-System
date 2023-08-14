@@ -11,6 +11,7 @@ def get_subscription(subscription_id):
 
 
 class TestCase(GraphQLTestCase):
+    databases = "__all__"
     GRAPHQL_URL = "/subscription/graphql"
     client = Client()
 
