@@ -12,7 +12,6 @@ def main():
     if 'WEBSITE_HOSTNAME' in os.environ:
         settings_module = "project.production"
     else:
-        load_dotenv('./.env')
         settings_module = "project.settings"
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 

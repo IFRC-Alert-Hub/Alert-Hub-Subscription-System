@@ -1,14 +1,7 @@
-import logging
 import os
-import signal
 import sys
-import threading
-import random
-import time
 
 from django.apps import AppConfig
-
-
 
 
 class SubscriptionManagerConfig(AppConfig):
@@ -17,15 +10,14 @@ class SubscriptionManagerConfig(AppConfig):
 
     def ready(self):
         if ('WEBSITE_HOSTNAME' in os.environ and 'migrate' not in sys.argv and 'collectstatic'
-         not in sys.argv) \
+            not in sys.argv) \
                 or \
-             ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
+                ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
             from django.core.cache import cache
             result = cache.add('locked', True, timeout=60)
             if result:
                 pass
-                #from .subscription_alert_mapping import map_alerts_to_subscription
-                #from .cache import cache_subscriptions_alert
-                #map_alerts_to_subscription()
-                #cache_subscriptions_alert()
-
+                # from .subscription_alert_mapping import map_alerts_to_subscription
+                # from .cache import cache_subscriptions_alert
+                # map_alerts_to_subscription()
+                # cache_subscriptions_alert()

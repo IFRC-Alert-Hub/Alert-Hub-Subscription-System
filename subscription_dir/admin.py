@@ -4,10 +4,10 @@ from subscription_manager_dir.models import SubscriptionAlerts
 from .models import Subscription
 
 
-
 class SubscriptionAlertsInline(admin.StackedInline):
     model = SubscriptionAlerts
     extra = 0
+
 
 class SubscriptionAdmin(admin.ModelAdmin):
     # using = 'AlertDB'
@@ -15,6 +15,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
     search_fields = ["id", "subscription_name"]
 
     inlines = [SubscriptionAlertsInline]
+
 
 # Register your models here.
 admin.site.register(Subscription, SubscriptionAdmin)

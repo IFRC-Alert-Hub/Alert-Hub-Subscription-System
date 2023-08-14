@@ -2,31 +2,37 @@
 <html>
 <head>
     <title>Subscription Email</title>
+    <style>
+        .field-style {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Subscription Alerts</h1>
-    <h2>Hello {{ user.email }},</h2>
-    <p>Here are the details of the alerts matching your subscription:</p>
-    <ul>
-        <li><strong>Country:</strong> {{ country_name }}</li>
-        <li><strong>Severity:</strong> {{ severity }}</li>
-        <li><strong>Certainty:</strong> {{ certainty }}</li>
-        <li><strong>Urgency:</strong> {{ urgency }}</li>
-        <li><strong>Source Feed:</strong> {{ source_feed }}</li>
-        <li><strong>Scope:</strong> {{ scope }}</li>
-        {% for each_info in info %}
-            <li><strong>Headline: </strong> {{ each_info.headline }}</li>
-            <li><strong>Alert Information in Language: </strong> {{ each_info.language }}</li>
-            <li><strong>Category: </strong> {{ each_info.category }}</li>
-            <li><strong>Description: </strong> {{ each_info.description }}</li>
-            <li><strong>Headline: </strong> {{ each_info.headline }}</li>
-            <li><strong>Instruction:  </strong> {{ each_info.instruction }}</li>
-        {% endfor %}
-        <!-- Add more alert details as needed -->
+{% if alerts %}
+    <h2>Immediate Alerts</h2>
+{% else %}
+    <h2>Subscription Alerts</h2>
+{% endif %}
+
+<h2>Hello {{ user.email }},</h2>
+<p>Here are <span class="field-style">{{ count }}</span> new incoming alerts matching your
+    subscription <span class="field-style">{{ title }}</span></p>
+<p>Please <a href="{{ viewer_link }}">click here</a> to view them</p>
+
+{% if alerts %}
+    <h2>Alert Briefs</h2>
+    <ul style="list-style-type: none;">
+    {% for alert in alerts %}
+        <div style="margin-bottom: 20px;">
+        • Event: {{ alert.event }} <br>
+          Country: {{ alert.country_name }} <br>
+          Admin level1s: {{ alert.admin1s|join:", " }}<br>
+          Sent Time: {{ alert.sent }}
+        </div>
+    {% endfor %}
     </ul>
+{% endif %}
+
 </body>
 </html>
-
-
-
-
