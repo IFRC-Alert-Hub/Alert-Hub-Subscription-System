@@ -1,7 +1,49 @@
+import random
+import string
+from unittest.mock import patch
 import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from .models import Subscription
+
+
+URGENCY_ARRAY = ["immediate", "expected", "future", "past", "unknown"]
+
+SEVERITY_ARRAY = ["extreme", "severe", "moderate", "minor", "unknown"]
+
+CERTAINTY_ARRAY = ["observed", "likely", "possible", "unlikely", "unknown"]
+
+
+def mock_save(self, *args, **kwargs):
+    super(Subscription, self).save(*args, **kwargs)
+
+
+def mock_delete(self, *args, **kwargs):
+    super(Subscription, self).delete(*args, **kwargs)
+
+
+def get_random_string(length):
+    # choose from all lowercase letter
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+
+
+def get_random_integer_array(start, end):
+    array = []
+    current = start
+    while current < end:
+        current = random.randint(current + 1, end)
+        array.append(current)
+    return array
+
+
+def get_random_string_array(candicates):
+    index_array = get_random_integer_array(0, len(candicates) - 1)
+    string_array = []
+    for index in index_array:
+        string_array.append(candicates[index])
+    return string_array
 
 
 class SubscriptionType(DjangoObjectType):
@@ -110,10 +152,41 @@ class UpdateSubscription(graphene.Mutation):
         return UpdateSubscription(success=True)
 
 
+@patch.object(Subscription, 'save', mock_save)
+class GenerateTestSubscriptions(graphene.Mutation):
+    class Arguments:
+        user_id = graphene.Int(required=True)
+        case_numbers = graphene.Int(required=True)
+
+    success = graphene.Boolean()
+    error_message = graphene.String()
+
+    @login_required
+    def mutate(self, info, user_id, case_numbers):
+        if case_numbers > 10:
+            return GenerateTestSubscriptions(success=False,
+                                             error_message='You should not be add cases '
+                                                           'more than 10000 at one time.')
+        with patch.object(Subscription, 'save', mock_save):
+            for _ in range(0, case_numbers):
+                subscription = create_subscription(user_id + random.randint(-10, 10),
+                                                   "test_case_" + get_random_string(10),
+                                                   get_random_integer_array(100000, 100100),
+                                                   get_random_integer_array(1000000, 1001000),
+                                                   get_random_string_array(URGENCY_ARRAY),
+                                                   get_random_string_array(SEVERITY_ARRAY),
+                                                   get_random_string_array(CERTAINTY_ARRAY),
+                                                   ["email"],
+                                                   0)
+                subscription.save()
+        return GenerateTestSubscriptions(success=True)
+
+
 class Mutation(graphene.ObjectType):
     create_subscription = CreateSubscription.Field()
     delete_subscription = DeleteSubscription.Field()
     update_subscription = UpdateSubscription.Field()
+    generate_test_subscriptions = GenerateTestSubscriptions.Field()
 
 
 class Query(graphene.ObjectType):
