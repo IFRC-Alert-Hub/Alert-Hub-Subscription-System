@@ -8,11 +8,11 @@ class MySubscription(HttpUser):
         query = """
             query read {
               listSubscription(
-                admin1Ids: []
-                certaintyArray: []
+                admin1Ids: [1000001]
+                certaintyArray: ["unknown"]
                 countryIds: []
-                severityArray: []
-                urgencyArray: []
+                severityArray: ["unknown"]
+                urgencyArray: ["unknown"]
               ) {
                 admin1Ids
                 certaintyArray
