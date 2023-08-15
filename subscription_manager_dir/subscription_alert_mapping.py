@@ -99,3 +99,12 @@ def print_all_admin1s_in_country(country_id):
     admin1s = CapFeedAdmin1.objects.filter(country__id=country_id)
     for admin in admin1s:
         ids.append(admin.id)
+
+def get_subscription_alerts_without_cache(subscription_id):
+    subscription = Subscription.objects.filter(id=subscription_id).first()
+    if subscription is None:
+        return False
+    else:
+        map_subscription_to_alert(subscription)
+        subscription_alerts_dict = subscription.subscription_alerts_to_dict()
+        return json.dumps(subscription_alerts_dict, indent=None)
