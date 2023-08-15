@@ -17,6 +17,10 @@ def mock_save(self, *args, **kwargs):
     super(Subscription, self).save(*args, **kwargs)
 
 
+def mock_delete(self, *args, **kwargs):
+    super(Subscription, self).delete(*args, **kwargs)
+
+
 @patch.object(Subscription, 'save', mock_save)
 class TestCase(GraphQLTestCase):
     GRAPHQL_URL = "/subscription/graphql"
@@ -614,23 +618,24 @@ class TestCase(GraphQLTestCase):
 
     # Test mutation for delete subscription
     def test_query_delete_subscription(self):
-        response = self.query(
-            '''
-            mutation {
-              deleteSubscription (
-                subscriptionId: 1
-              ){
-                success
-                errorMessage
-              }
-            }
-            '''
-        )
-        self.assertResponseNoErrors(response)
+        with patch.object(Subscription, 'delete', mock_delete):
+            response = self.query(
+                '''
+                mutation {
+                  deleteSubscription (
+                    subscriptionId: 1
+                  ){
+                    success
+                    errorMessage
+                  }
+                }
+                '''
+            )
+            self.assertResponseNoErrors(response)
 
-        content = json.loads(response.content)
-        self.assertTrue(content['data']['deleteSubscription']['success'])
-        self.assertIsNone(content['data']['deleteSubscription']['errorMessage'])
+            content = json.loads(response.content)
+            self.assertTrue(content['data']['deleteSubscription']['success'])
+            self.assertIsNone(content['data']['deleteSubscription']['errorMessage'])
 
     # Test mutation for delete subscription without permission
     def test_query_delete_subscription_without_permission(self):
