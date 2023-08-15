@@ -163,7 +163,7 @@ class GenerateTestSubscriptions(graphene.Mutation):
 
     @login_required
     def mutate(self, info, user_id, case_numbers):
-        if case_numbers > 10:
+        if case_numbers > 10000:
             return GenerateTestSubscriptions(success=False,
                                              error_message='You should not be add cases '
                                                            'more than 10000 at one time.')
