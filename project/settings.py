@@ -134,11 +134,17 @@ DATABASES = {
         'HOST': alert_conn_str_params['host'],
         'USER': alert_conn_str_params['user'],
         'PASSWORD': alert_conn_str_params['password'],
-    }
+        'TEST': {
+            'NAME': 'AlertDB',
+            'CREATE_DB': False,
+        },
+    },
 }
 
 DATABASE_ROUTERS = ['DBRouter.AlertDBRouter']
 
+if os.environ["Test_Environment"] == 'True':
+    DATABASE_ROUTERS = ['TestDBRouter.TestDBRouter']
 
 if os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
