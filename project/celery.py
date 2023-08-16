@@ -27,11 +27,11 @@ app.conf.beat_schedule = {
         'schedule': timedelta(days=1),
         'kwargs': {'sent_flag': 2},
     },
-    'process-every-week': {
-        'task': 'project.subscription_manager_dir.tasks.process_non_immediate_alerts',
-        'schedule': timedelta(weeks=1),
-        'kwargs': {'sent_flag': 3},
-    }
+    # 'process-every-week': {
+    #     'task': 'project.subscription_manager_dir.tasks.process_non_immediate_alerts',
+    #     'schedule': timedelta(weeks=1),
+    #     'kwargs': {'sent_flag': 3},
+    # }
 }
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
