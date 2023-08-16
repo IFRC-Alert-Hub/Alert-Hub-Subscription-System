@@ -1,15 +1,28 @@
 import json
+from unittest.mock import patch
+
 from graphene_django.utils.testing import GraphQLTestCase
 from django.test import Client
 from django.contrib.auth import get_user_model
+
 from .models import Subscription
 from .schema import create_subscription
+from .schema import get_random_string, get_random_integer_array, get_random_string_array
 
 
 def get_subscription(subscription_id):
     return Subscription.objects.get(id=subscription_id)
 
 
+def mock_save(self, *args, **kwargs):
+    super(Subscription, self).save(*args, **kwargs)
+
+
+def mock_delete(self, *args, **kwargs):
+    super(Subscription, self).delete(*args, **kwargs)
+
+
+@patch.object(Subscription, 'save', mock_save)
 class TestCase(GraphQLTestCase):
     GRAPHQL_URL = "/subscription/graphql"
     client = Client()
@@ -22,44 +35,45 @@ class TestCase(GraphQLTestCase):
         cls.user = user.objects.create_user(email='test1@example.com', password='testpassword')
         # Create another user
         cls.user = user.objects.create_user(email='test2@example.com', password='testpassword')
-        # Create subscriptions for user 1
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[1, 2, 3],
-                            admin1_ids=[1, 2, 3],
-                            urgency_array=["immediate"],
-                            severity_array=["severe"],
-                            certainty_array=["observed"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[1],
-                            admin1_ids=[1],
-                            urgency_array=["expected"],
-                            severity_array=["extreme"],
-                            certainty_array=["likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        create_subscription(user_id=1,
-                            subscription_name="test_group1",
-                            country_ids=[2, 3],
-                            admin1_ids=[2, 3],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
-        # Create a subscription for user 2
-        create_subscription(user_id=2,
-                            subscription_name="test_group2",
-                            country_ids=[1, 2, 3],
-                            admin1_ids=[1, 2, 3],
-                            urgency_array=["immediate", "expected"],
-                            severity_array=["severe", "extreme"],
-                            certainty_array=["observed", "likely"],
-                            subscribe_by=["sms", "email"],
-                            sent_flag=0)
+        with patch.object(Subscription, 'save', mock_save):
+            # Create subscriptions for user 1
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[1, 2, 3],
+                                admin1_ids=[1, 2, 3],
+                                urgency_array=["immediate"],
+                                severity_array=["severe"],
+                                certainty_array=["observed"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[1],
+                                admin1_ids=[1],
+                                urgency_array=["expected"],
+                                severity_array=["extreme"],
+                                certainty_array=["likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            create_subscription(user_id=1,
+                                subscription_name="test_group1",
+                                country_ids=[2, 3],
+                                admin1_ids=[2, 3],
+                                urgency_array=["immediate", "expected"],
+                                severity_array=["severe", "extreme"],
+                                certainty_array=["observed", "likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
+            # Create a subscription for user 2
+            create_subscription(user_id=2,
+                                subscription_name="test_group2",
+                                country_ids=[1, 2, 3],
+                                admin1_ids=[1, 2, 3],
+                                urgency_array=["immediate", "expected"],
+                                severity_array=["severe", "extreme"],
+                                certainty_array=["observed", "likely"],
+                                subscribe_by=["sms", "email"],
+                                sent_flag=0)
 
     def setUp(self):
         # Log in the user
@@ -605,23 +619,24 @@ class TestCase(GraphQLTestCase):
 
     # Test mutation for delete subscription
     def test_query_delete_subscription(self):
-        response = self.query(
-            '''
-            mutation {
-              deleteSubscription (
-                subscriptionId: 1
-              ){
-                success
-                errorMessage
-              }
-            }
-            '''
-        )
-        self.assertResponseNoErrors(response)
+        with patch.object(Subscription, 'delete', mock_delete):
+            response = self.query(
+                '''
+                mutation {
+                  deleteSubscription (
+                    subscriptionId: 1
+                  ){
+                    success
+                    errorMessage
+                  }
+                }
+                '''
+            )
+            self.assertResponseNoErrors(response)
 
-        content = json.loads(response.content)
-        self.assertTrue(content['data']['deleteSubscription']['success'])
-        self.assertIsNone(content['data']['deleteSubscription']['errorMessage'])
+            content = json.loads(response.content)
+            self.assertTrue(content['data']['deleteSubscription']['success'])
+            self.assertIsNone(content['data']['deleteSubscription']['errorMessage'])
 
     # Test mutation for delete subscription without permission
     def test_query_delete_subscription_without_permission(self):
@@ -642,3 +657,19 @@ class TestCase(GraphQLTestCase):
         content = json.loads(response.content)
         self.assertFalse(content['data']['deleteSubscription']['success'])
         self.assertIsNotNone(content['data']['deleteSubscription']['errorMessage'])
+
+    def test_get_random_string(self):
+        self.assertTrue(len(get_random_string(10)), 10)
+        self.assertTrue(len(get_random_string(12)), 12)
+        self.assertTrue(len(get_random_string(15)), 15)
+
+    def test_get_random_integer_array(self):
+        int_array = get_random_integer_array(10, 20)
+        for target_int in int_array:
+            self.assertTrue(10 <= target_int <= 20)
+
+    def test_get_random_string_array(self):
+        candidates = ["a", "bb", "ccc", "dddd", "eeeee", "fgh"]
+        string_array = get_random_string_array(candidates)
+        for target_string in string_array:
+            self.assertTrue(target_string in candidates)
