@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 
 def main():
     """Run administrative tasks."""
+    if "test" in sys.argv:
+        os.environ["Test_Environment"] = 'True'
+    else:
+        os.environ["Test_Environment"] = 'False'
     # When running on Azure App Service you should use the production settings.
     if 'WEBSITE_HOSTNAME' in os.environ:
         settings_module = "project.production"

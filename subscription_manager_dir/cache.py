@@ -16,5 +16,5 @@ def delete_subscription_alerts(subscription_id):
 def get_subscription_alerts(subscription_id):
     result = cache.get("subscription" + str(subscription_id))
     if result is None:
-        return "The Subscription Is Not Existed"
+        return False
     return result
