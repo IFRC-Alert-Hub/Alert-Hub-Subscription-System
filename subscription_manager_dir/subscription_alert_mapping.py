@@ -87,7 +87,7 @@ def delete_alert_to_subscription(alert_id):
 
     alert_to_be_deleted.delete()
     if len(updated_subscription_ids) != 0:
-        return f" Alert {alert_id} is successfully deleted from subscription database. " \
+        return f"Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \
                f"{updated_subscription_ids}."
 

@@ -22,7 +22,7 @@ def mock_delete(self, *args, **kwargs):
     super(Subscription, self).delete(*args, **kwargs)
 
 
-#@patch.object(Subscription, 'save', mock_save)
+@patch.object(Subscription, 'save', mock_save)
 class TestCase(GraphQLTestCase):
     GRAPHQL_URL = "/subscription/graphql"
     client = Client()
