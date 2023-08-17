@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
         ('subscription_manager_dir', '0002_subscriptionalerts_sent'),
     ]
     if os.environ["Test_Environment"] == 'True':
-
         operations = [
             migrations.CreateModel(
                 name='CapFeedCountry',
