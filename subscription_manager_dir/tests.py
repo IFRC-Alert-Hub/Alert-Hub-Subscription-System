@@ -21,7 +21,7 @@ from graphene_django.utils.testing import GraphQLTestCase
 from django.test import Client
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from .models import Subscription
+from .models import Subscription, Alert
 from django.utils import timezone
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
 
@@ -30,9 +30,10 @@ from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, 
 #This makes sure that we could mock exact data we want on these models and test the operations
 # that manipulate them.
 class SubscriptionManagerTestCase(TestCase):
-
     # Setup data for the tests
-    def setUp(self):
+
+    @classmethod
+    def setUpClass(cls):
         Teyvat_1 = CapFeedCountry.objects.create(name="Teyvat_1")
         Teyvat_1.save()
         Teyvat_2 = CapFeedCountry.objects.create(name="Teyvat_2")
@@ -107,26 +108,33 @@ class SubscriptionManagerTestCase(TestCase):
                                                        alert=alert_4)
         alert_info_6.save()
 
-    # Test creation of subscription and check whether subscriptions matched expected list of alerts
-    #def test_subscription_creation_1(self):
-    #    pass
-        #urgency_list = ["Expected","Future"]
-        #severity_list = ["Minor", "Moderate"]
-        #certainty_list = ["Likely", "Observed", "Possible"]
-        #subscription = Subscription.objects.create(subscription_name="Subscription 1",
-        #                                           user_id=1,
-        #                                           country_ids=[1],
-        #                                           admin1_ids=[1,2],
-        #                                           urgency_array=urgency_list,
-        #                                           severity_array=severity_list,
-        #                                           certainty_array=certainty_list,
-        #                                           subscribe_by=[1],
-        #                                           sent_flag=0)
-        #expected = [1,3]
-        #actual = []
-        #for alert in subscription.alert_set.all():
-        #    actual.append(alert.id)
-        #self.assertListEqual(expected,actual)
+        super(SubscriptionManagerTestCase, cls).setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Clean up any resources if necessary
+        super().tearDownClass()
+
+    # Test: Creation of subscriptions and check whether subscriptions matched expected list of
+    # alerts
+    def test_subscription_creation_1(self):
+        urgency_list = ["Expected","Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed", "Possible"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 1",
+                                                   user_id=1,
+                                                   country_ids=[1],
+                                                   admin1_ids=[1,2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [1,3]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected,actual)
 
         #subscription.delete()
 
@@ -153,22 +161,173 @@ class SubscriptionManagerTestCase(TestCase):
 
 
     def test_subscription_creation_all_alerts_in_country_1(self):
-        urgency_array = ["Expected","Immediate","Future"]
-        severity_list = ["Severe"]
-        certainty_list = ["Possible"]
-        #test_item = Subscription.objects.create().save()
-        #alert_info = CapFeedAlert.objects.get(id=4).capfeedalertinfo_set.all()
-        #for info in alert_info:
-            #print(info.severity)
+        urgency_list = ["Expected","Immediate","Future"]
+        severity_list = ["Minor","Severe","Moderate"]
+        certainty_list = ["Likely","Possible","Observed"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 3",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[1,2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [1,3]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        subscription.delete()
 
     def test_subscription_creation_all_alerts_in_country_2(self):
-        urgency_array = ["Expected","Immediate","Future"]
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 4",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[3,4],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [2, 4]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        subscription.delete()
+
+    # Test: update subscription by severity, certainty, and urgency and check corresponding alerts
+    def test_subscription_update_1(self):
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 5",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[3,4],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [2,4]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        #Update urgency, severity, certainty for the subscription
+        urgency_list = ["Expected"]
         severity_list = ["Severe"]
         certainty_list = ["Possible"]
-        #test_item = Subscription.objects.create().save()
-        #alert_info = CapFeedAlert.objects.get(id=4).capfeedalertinfo_set.all()
-        #for info in alert_info:
-            #print(info.severity)
+        subscription.urgency_array = urgency_list
+        subscription.severity_array = severity_list
+        subscription.certainty_array = certainty_list
 
-    # Test change subscription and check many subscription - to - many alerts
-    # Test delete subscription and check many subscription - to - many field
+        subscription.save()
+
+        expected = [4]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected,actual)
+
+        subscription.delete()
+
+        # Test: update subscription by regions and check corresponding alerts
+    def test_subscription_update_2(self):
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 6",
+                                                    user_id=1,
+                                                    country_ids=[2],
+                                                    admin1_ids=[1, 2],
+                                                    urgency_array=urgency_list,
+                                                    severity_array=severity_list,
+                                                    certainty_array=certainty_list,
+                                                    subscribe_by=[1],
+                                                    sent_flag=0)
+        expected = [1, 3]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        # Update admin1 for the subscription
+        admin1_ids=[3, 4]
+        subscription.admin1_ids = admin1_ids
+        subscription.save()
+
+        expected = [2,4]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        subscription.delete()
+    # Test: delete subscription and check many subscription - to - many field
+    def test_subscription_delete_1(self):
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 7",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[1, 2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [1, 3]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        # Delete the subscription
+        subscription.delete()
+
+        #Check if there is still many-to-many relationship between deleted subscriptions and
+        # corresponding alerts
+
+        for alert_id in actual:
+            alert = Alert.objects.filter(id = alert_id).first()
+            alert_subscriptions = alert.subscriptions.all()
+            self.assertQuerysetEqual(alert_subscriptions, [])
+
+
+    def test_subscription_delete_2(self):
+        urgency_list = ["Expected"]
+        severity_list = ["Severe"]
+        certainty_list = ["Possible"]
+        subscription = Subscription.objects.create(subscription_name="Subscription 8",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[3, 4],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+        expected = [4]
+        actual = []
+        for alert in subscription.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        subscription.delete()
+
+        #Check if there is still many-to-many relationship between deleted subscriptions and
+        # corresponding alerts
+        for alert_id in actual:
+            alert = Alert.objects.filter(id = alert_id).first()
+            alert_subscriptions = alert.subscriptions.all()
+            self.assertQuerysetEqual(alert_subscriptions, [])
