@@ -1,40 +1,37 @@
 import json
-from unittest.mock import patch
-
-from graphene_django.utils.testing import GraphQLTestCase
-from django.test import Client
-from django.contrib.auth import get_user_model
 from django.test import TestCase
-from .models import Subscription, Alert
 from django.utils import timezone
-from .cache import *
+from .models import Subscription, Alert
+from .cache import get_subscription_alerts
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
 
 #Since Subscription System can only have read-access to Alert DB, the tables in external models
 # need to be simulated on Subscription DB, otherwise the test data will not be inserted.
 #This makes sure that we could mock exact data we want on these models and test the operations
 # that manipulate them.
+
+# pylint: disable=too-many-locals
 class SubscriptionManagerTestCase(TestCase):
     # Setup data for the tests
     @classmethod
     def setUpClass(cls):
-        Teyvat_1 = CapFeedCountry.objects.create(name="Teyvat_1")
-        Teyvat_1.save()
-        Teyvat_2 = CapFeedCountry.objects.create(name="Teyvat_2")
-        Teyvat_2.save()
+        teyvat_1 = CapFeedCountry.objects.create(name="Teyvat_1")
+        teyvat_1.save()
+        teyvat_2 = CapFeedCountry.objects.create(name="Teyvat_2")
+        teyvat_2.save()
 
         # create admin data for migrations
-        admin1_1 = CapFeedAdmin1.objects.create(name="Meng De", country=Teyvat_1)
+        admin1_1 = CapFeedAdmin1.objects.create(name="Meng De", country=teyvat_1)
         admin1_1.save()
-        admin1_2 = CapFeedAdmin1.objects.create(name="Li Yue", country=Teyvat_1)
+        admin1_2 = CapFeedAdmin1.objects.create(name="Li Yue", country=teyvat_1)
         admin1_2.save()
-        admin1_3 = CapFeedAdmin1.objects.create(name="Xu Mi", country=Teyvat_2)
+        admin1_3 = CapFeedAdmin1.objects.create(name="Xu Mi", country=teyvat_2)
         admin1_3.save()
-        admin1_4 = CapFeedAdmin1.objects.create(name="Feng Dan", country=Teyvat_2)
+        admin1_4 = CapFeedAdmin1.objects.create(name="Feng Dan", country=teyvat_2)
         admin1_4.save()
 
         #create alert data
-        alert_1 = CapFeedAlert.objects.create(sent=timezone.now(), country=Teyvat_1)
+        alert_1 = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         alert_1.admin1s.add(admin1_1, admin1_2)
         alert_1.save()
         alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
@@ -52,7 +49,7 @@ class SubscriptionManagerTestCase(TestCase):
         alert_info_1.save()
         alert_info_2.save()
 
-        alert_2 = CapFeedAlert.objects.create(sent=timezone.now(), country=Teyvat_2)
+        alert_2 = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_2)
         alert_2.admin1s.add(admin1_3, admin1_4)
         alert_2.save()
         alert_info_3 = CapFeedAlertinfo.objects.create(category="Met",
@@ -70,7 +67,7 @@ class SubscriptionManagerTestCase(TestCase):
         alert_info_3.save()
         alert_info_4.save()
 
-        alert_3 = CapFeedAlert.objects.create(sent=timezone.now(), country=Teyvat_1)
+        alert_3 = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         alert_3.admin1s.add(admin1_1)
         alert_3.save()
         alert_info_5 = CapFeedAlertinfo.objects.create(category="Met",
@@ -81,7 +78,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                        alert=alert_3)
         alert_info_5.save()
 
-        alert_4 = CapFeedAlert.objects.create(sent=timezone.now(), country=Teyvat_2)
+        alert_4 = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_2)
         alert_4.admin1s.add(admin1_4)
         alert_4.save()
         alert_info_6 = CapFeedAlertinfo.objects.create(category="Met",
@@ -541,6 +538,5 @@ class SubscriptionManagerTestCase(TestCase):
     # Test delete alert and test many subscription - to - many alerts
     # Test delete alert and test cache
     # Test delete alert that is not mapped with any subscription(rare case)
-
 
     # Test map all subscriptions

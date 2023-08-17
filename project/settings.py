@@ -143,7 +143,7 @@ DATABASES = {
 
 DATABASE_ROUTERS = ['DBRouter.AlertDBRouter']
 
-if os.environ["Test_Environment"] == 'True':
+if "Test_Environment" in os.environ and os.environ["Test_Environment"] == 'True':
     DATABASE_ROUTERS = ['TestDBRouter.TestDBRouter']
 
 if os.environ.get('GITHUB_WORKFLOW'):

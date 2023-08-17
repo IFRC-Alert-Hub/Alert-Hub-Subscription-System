@@ -104,7 +104,7 @@ def get_subscription_alerts_without_cache(subscription_id):
     subscription = Subscription.objects.filter(id=subscription_id).first()
     if subscription is None:
         return False
-    else:
-        map_subscription_to_alert(subscription)
-        subscription_alerts_dict = subscription.subscription_alerts_to_dict()
-        return json.dumps(subscription_alerts_dict, indent=None)
+
+    map_subscription_to_alert(subscription)
+    subscription_alerts_dict = subscription.subscription_alerts_to_dict()
+    return json.dumps(subscription_alerts_dict, indent=None)
