@@ -93,7 +93,7 @@ def process_non_immediate_alerts(sent_flag):
 
         related_alerts_count = related_alerts.count()
 
-        viewer_link = "https://alert-hub-frontend.azurewebsites.net/"
+        viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
 
         context = {
             'title': subscription_name,
