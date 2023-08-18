@@ -7,7 +7,7 @@ from celery import shared_task
 from project import settings
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, queue='user_manager')
 def send_email(self, email, subject, template_name, context=None):
 
     message = render_to_string(template_name, context)
