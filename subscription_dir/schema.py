@@ -1,3 +1,4 @@
+import os
 import random
 import string
 from unittest.mock import patch
@@ -5,7 +6,6 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
 from .models import Subscription
-
 
 URGENCY_ARRAY = ["immediate", "expected", "future", "past", "unknown"]
 
@@ -96,8 +96,35 @@ class CreateSubscription(graphene.Mutation):
         return CreateSubscription(subscription=subscription)
 
 
-class DeleteSubscription(graphene.Mutation):
+class CreateSubscriptionTest(graphene.Mutation):
+    class Arguments:
+        user_id = graphene.Int(required=True)
+        subscription_name = graphene.String(required=True)
+        country_ids = graphene.List(graphene.Int)
+        admin1_ids = graphene.List(graphene.Int)
+        urgency_array = graphene.List(graphene.String)
+        severity_array = graphene.List(graphene.String)
+        certainty_array = graphene.List(graphene.String)
+        subscribe_by = graphene.List(graphene.String)
+        sent_flag = graphene.Int(required=True)
 
+    subscription = graphene.Field(SubscriptionType)
+
+    def mutate(self, info, user_id, subscription_name, country_ids, admin1_ids,
+               urgency_array, severity_array, certainty_array, subscribe_by, sent_flag):
+        subscription = create_subscription(user_id,
+                                           subscription_name,
+                                           country_ids,
+                                           admin1_ids,
+                                           urgency_array,
+                                           severity_array,
+                                           certainty_array,
+                                           subscribe_by,
+                                           sent_flag)
+        return CreateSubscriptionTest(subscription=subscription)
+
+
+class DeleteSubscription(graphene.Mutation):
     class Arguments:
         subscription_id = graphene.Int(required=True)
 
@@ -183,6 +210,8 @@ class GenerateTestSubscriptions(graphene.Mutation):
 
 
 class Mutation(graphene.ObjectType):
+    if os.environ['TEST_MODE'] == "True":
+        create_subscription_test = CreateSubscriptionTest.Field()
     create_subscription = CreateSubscription.Field()
     delete_subscription = DeleteSubscription.Field()
     update_subscription = UpdateSubscription.Field()
@@ -210,7 +239,7 @@ class Query(graphene.ObjectType):
                                            admin1_ids__contains=admin1_ids,
                                            urgency_array__contains=urgency_array,
                                            severity_array__contains=severity_array,
-                                           certainty_array__contains=certainty_array)\
+                                           certainty_array__contains=certainty_array) \
             .order_by('-id')
 
     def resolve_get_subscription(self, info, subscription_id):

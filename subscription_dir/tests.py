@@ -560,6 +560,63 @@ class TestCase(GraphQLTestCase):
                          ["sms", "email"])
         self.assertEqual(content['data']['createSubscription']['subscription']['sentFlag'], 0)
 
+    # Test mutation for create subscription test
+    def test_query_create_subscription_test(self):
+        response = self.query(
+            '''
+            mutation {
+              createSubscriptionTest (
+                userId: 3,
+                subscriptionName: "test_group3",
+                countryIds: [1,2,3],
+                admin1Ids: [1,2,3],
+                urgencyArray: ["immediate","expected"],
+                severityArray: ["severe", "extreme"],
+                certaintyArray: ["observed","likely"],
+                subscribeBy: ["sms", "email"],
+                sentFlag: 0
+              ){
+                subscription {
+                  id
+                  subscriptionName
+                  userId
+                  countryIds
+                  admin1Ids
+                  urgencyArray
+                  severityArray
+                  certaintyArray
+                  subscribeBy
+                  sentFlag
+                }
+              }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['id'], '6')
+        self.assertEqual(
+            content['data']['createSubscriptionTest']['subscription']['subscriptionName'],
+            'test_group3')
+        self.assertEqual(
+            content['data']['createSubscriptionTest']['subscription']['userId'],
+            3)
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['countryIds'],
+                         [1, 2, 3])
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['admin1Ids'],
+                         [1, 2, 3])
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['urgencyArray'],
+                         ["immediate", "expected"])
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['severityArray'],
+                         ["severe", "extreme"])
+        self.assertEqual(
+            content['data']['createSubscriptionTest']['subscription']['certaintyArray'],
+            ["observed", "likely"])
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['subscribeBy'],
+                         ["sms", "email"])
+        self.assertEqual(content['data']['createSubscriptionTest']['subscription']['sentFlag'], 0)
+
     # Test mutation for update subscription
     def test_query_update_subscription(self):
         response = self.query(
