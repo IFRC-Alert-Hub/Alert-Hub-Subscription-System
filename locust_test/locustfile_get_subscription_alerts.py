@@ -3,6 +3,7 @@ import json
 from locust import HttpUser, task, between
 import csv
 
+
 # class SubscriptionUser(HttpUser):
 #     host = "http://127.0.0.1:8000"
 #     wait_time = between(0, 1)
@@ -22,5 +23,7 @@ class SubscriptionUser(HttpUser):
 
     @task
     def send_requests(self):
-        url = f"/subscription_manager/get_subscription_alerts/1/"
+        # url = f"/subscription_manager/get_subscription_alerts/6/"
+
+        url = f"/subscription_manager/get_subscription_alerts_in_real_time/6/"
         self.client.get(url)
