@@ -30,8 +30,10 @@ class Subscription(models.Model):
         self.alert_set.clear()
         subscription_alert_mapping.map_subscription_to_alert(self)
         cache.cache_subscription_alert(self)
+        cache.cache_subscription_admins(self)
 
     def delete(self, *args, force_insert=False, force_update=False):
         from subscription_manager_dir import cache
         cache.delete_subscription_alerts(self.id)
+        cache.delete_subscription_admins_cache(self)
         super().delete(force_insert, force_update)

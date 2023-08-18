@@ -1,6 +1,6 @@
 import json
 
-from .cache import cache_subscription_alert
+from .cache import cache_subscription_alert, get_admin_cache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
@@ -40,14 +40,22 @@ def map_alert_to_subscription(alert_id):
         return f"Alert with id {alert_id} is not existed"
     if converted_alert is not None:
         return f"Alert with id {alert_id} is already converted and matched subscription"
-    alert_admin1_ids = []
+    #alert_admin1_ids = []
+    subscription_ids = {}
     for admin1 in alert.admin1s.all():
-        alert_admin1_ids.append(admin1.id)
-    subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
+        admin_subscriptions = get_admin_cache(admin1.id)
+        if admin_subscriptions != None:
+            subscription_ids.update(admin_subscriptions)
+        #alert_admin1_ids.append(admin1.id)
+    #subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
 
     internal_alert = None
     updated_subscription_ids = []
-    for subscription in subscriptions:
+    #for subscription in subscriptions:
+    for subscription_id in subscription_ids:
+        subscription = Subscription.objects.filter(id=subscription_id).first()
+        if subscription == None:
+            continue
         for info in alert.capfeedalertinfo_set.all():
             if info.severity in subscription.severity_array and \
                     info.certainty in subscription.certainty_array and \
