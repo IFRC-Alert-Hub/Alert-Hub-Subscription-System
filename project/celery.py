@@ -42,11 +42,12 @@ app.config_from_object(settings, namespace='CELERY')
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
 
-CELERY_IMPORTS = ('subscription_manager_dir.tasks',)
+CELERY_IMPORTS = ('subscription_manager_dir.tasks', 'user_dir.tasks')
 
 app.conf.task_default_queue = 'subscription_manager'
 app.conf.task_queues = (
     Queue('subscription_manager', routing_key='subscription_manager.#', exchange='subscription_manager'),
+    Queue('user_manager', routing_key='user_manager.#', exchange='user_manager'),
 )
 app.conf.task_default_exchange = 'subscription_manager'
 app.conf.task_default_exchange_type = 'topic'
@@ -56,8 +57,13 @@ task_routes = {
         'subscription_manager_dir.tasks.*': {
             'queue': 'subscription_manager',
             'routing_key': 'subscription_manager.#',
-            'exchange' : 'subscription_manager',
+            'exchange': 'subscription_manager',
         },
+        'user_dir.tasks.*': {
+            'queue': 'user_manager',
+            'routing_key': 'user_manager.#',
+            'exchange': 'user_manager',
+        }
 }
 
 @app.task(bind=True, ignore_result=True)
