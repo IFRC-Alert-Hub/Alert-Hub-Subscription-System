@@ -47,7 +47,7 @@ def create_subscription(user, country, admin1s):
     )
 
 
-def generate_fake_users_and_subscriptions(count, csv_filename):
+def generate_fake_users_and_subscriptions(count, csv_filename, country_count):
     users = []
 
     with open(csv_filename, 'w', newline='') as csvfile:
@@ -66,7 +66,7 @@ def generate_fake_users_and_subscriptions(count, csv_filename):
             users.append(user)
 
             subscriptions = []
-            selected_countries = random.sample(countries, min(5, len(countries)))
+            selected_countries = random.sample(countries, country_count)
 
             for country in selected_countries:
                 admin1s = CapFeedAdmin1.objects.filter(country=country)
@@ -78,10 +78,12 @@ def generate_fake_users_and_subscriptions(count, csv_filename):
                     admin1_ids = [admin1.id for admin1 in selected_admin1s]
 
                     subscription = create_subscription(user, country_ids, admin1_ids)
-                    subscriptions.append(subscription.id)
+                    subscriptions.append(str(subscription.id))
+
+                    subscription_ids = ', '.join(subscriptions)
 
             writer.writerow(
-                {'email': email, 'password': password, 'subscription_ids': subscriptions})
+                {'email': email, 'password': password, 'subscription_ids': subscription_ids})
 
     return users
 
@@ -89,4 +91,4 @@ def generate_fake_users_and_subscriptions(count, csv_filename):
 call_command('flush', '--noinput')
 
 # Generate 10 fake users
-generate_fake_users_and_subscriptions(10, 'fake_users.csv')
+generate_fake_users_and_subscriptions(10, 'fake_users.csv', 5)
