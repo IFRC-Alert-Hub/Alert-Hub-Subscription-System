@@ -31,9 +31,9 @@ def cache_subscription_admins(subscription):
         cache_id = "admin"+str(admin1_id)
         admin = cache.get(cache_id)
         if admin is None:
-            cache.set(cache_id, {subscription.id})
+            cache.set(cache_id, [subscription.id])
         else:
-            admin.add(subscription.id)
+            admin.append(subscription.id)
             cache.set(cache_id,admin)
 
 def delete_subscription_admins_cache(subscription):
