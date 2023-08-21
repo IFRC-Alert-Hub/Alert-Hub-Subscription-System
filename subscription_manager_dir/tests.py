@@ -4,7 +4,8 @@ from django.utils import timezone
 from .models import Subscription, Alert
 from .cache import get_subscription_alerts
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
-from .subscription_alert_mapping import map_alert_to_subscription,delete_alert_to_subscription
+from .subscription_alert_mapping import map_alert_to_subscription,\
+    delete_alert_to_subscription, map_subscriptions_to_alert
 
 
 # Since Subscription System can only have read-access to Alert DB, the tables in external models
@@ -698,7 +699,8 @@ class SubscriptionManagerTestCase(TestCase):
                    f"Updated Subscription id are " \
                    f"{updated_subscription_ids}."
         self.assertEqual(expected, result)
-    # Test delete alert and test cache
+    #Test cache that stores alerts list of the previously mapped
+    # subscription after the alert gets deleted
     def test_deleted_alert_that_previously_mapped_subscription_cache(self):
         # create the subscription
         urgency_list = ["Very Urgent"]
@@ -779,3 +781,45 @@ class SubscriptionManagerTestCase(TestCase):
         expected = f"Alert {mocked_incoming_alert_id} is successfully deleted " \
                    f"from subscription database. "
         self.assertEqual(expected, result)
+
+        #Test map all subscriptions to alerts
+    def test_mapping_all_subscriptions_to_alerts(self):
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed", "Possible"]
+        subscription_1 = Subscription.objects.create(subscription_name="Subscriptions1",
+                                                   user_id=1,
+                                                   country_ids=[1],
+                                                   admin1_ids=[1, 2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+
+        urgency_list = ["Expected"]
+        severity_list = ["Severe"]
+        certainty_list = ["Possible"]
+        subscription_2 = Subscription.objects.create(subscription_name="Subscriptions2",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[3, 4],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+
+        map_subscriptions_to_alert()
+
+        expected = [1, 3]
+        actual = []
+        for alert in subscription_1.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        expected = [4]
+        actual = []
+        for alert in subscription_2.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
