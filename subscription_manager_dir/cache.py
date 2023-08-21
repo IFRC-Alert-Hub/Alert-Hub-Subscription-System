@@ -18,3 +18,33 @@ def get_subscription_alerts(subscription_id):
     if result is None:
         return False
     return result
+def cache_subscriptions_admins():
+    for subscription in Subscription.objects.all():
+        cache_subscription_admins(subscription)
+
+def cache_subscription_admins(subscription):
+    for admin1_id in subscription.admin1_ids:
+        cache_id = "admin"+str(admin1_id)
+        admin = cache.get(cache_id)
+        if admin is None:
+            cache.set(cache_id, {subscription.id})
+        else:
+            admin.add(subscription.id)
+            cache.set(cache_id,admin)
+
+def delete_subscription_admins_cache(subscription):
+    for admin1_id in subscription.admin1_ids:
+        cache_id = "admin"+str(admin1_id)
+        admin = cache.get(cache_id)
+        if admin is not None:
+            try:
+                admin.remove(subscription.id)
+                cache.set(cache_id, admin)
+            except ValueError:
+                pass
+
+def get_admin_cache(admin_id):
+    return cache.get("admin"+str(admin_id))
+
+def clear_cache():
+    cache.clear()

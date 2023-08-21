@@ -4,13 +4,17 @@ from django.utils import timezone
 from .models import Subscription, Alert
 from .cache import get_subscription_alerts
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
+from .subscription_alert_mapping import map_alert_to_subscription,\
+    delete_alert_to_subscription, map_subscriptions_to_alert
 
-#Since Subscription System can only have read-access to Alert DB, the tables in external models
+
+# Since Subscription System can only have read-access to Alert DB, the tables in external models
 # need to be simulated on Subscription DB, otherwise the test data will not be inserted.
-#This makes sure that we could mock exact data we want on these models and test the operations
+# This makes sure that we could mock exact data we want on these models and test the operations
 # that manipulate them.
 
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-public-methods
 class SubscriptionManagerTestCase(TestCase):
     # Setup data for the tests
     @classmethod
@@ -30,7 +34,7 @@ class SubscriptionManagerTestCase(TestCase):
         admin1_4 = CapFeedAdmin1.objects.create(name="Feng Dan", country=teyvat_2)
         admin1_4.save()
 
-        #create alert data
+        # create alert data
         alert_1 = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         alert_1.admin1s.add(admin1_1, admin1_2)
         alert_1.save()
@@ -99,25 +103,25 @@ class SubscriptionManagerTestCase(TestCase):
     # Test: Creation of subscriptions and check whether subscriptions matched expected list of
     # alerts
     def test_subscription_creation_1(self):
-        urgency_list = ["Expected","Future"]
+        urgency_list = ["Expected", "Future"]
         severity_list = ["Minor", "Moderate"]
         certainty_list = ["Likely", "Observed", "Possible"]
         subscription = Subscription.objects.create(subscription_name="Subscription 1",
                                                    user_id=1,
                                                    country_ids=[1],
-                                                   admin1_ids=[1,2],
+                                                   admin1_ids=[1, 2],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        expected = [1,3]
+        expected = [1, 3]
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
-        self.assertListEqual(expected,actual)
+        self.assertListEqual(expected, actual)
 
-        #subscription.delete()
+        # subscription.delete()
 
     def test_subscription_creation_2(self):
         urgency_list = ["Expected"]
@@ -126,7 +130,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 2",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
@@ -136,25 +140,24 @@ class SubscriptionManagerTestCase(TestCase):
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
-        self.assertListEqual(expected,actual)
+        self.assertListEqual(expected, actual)
 
         subscription.delete()
 
-
     def test_subscription_creation_all_alerts_in_country_1(self):
-        urgency_list = ["Expected","Immediate","Future"]
-        severity_list = ["Minor","Severe","Moderate"]
-        certainty_list = ["Likely","Possible","Observed"]
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
         subscription = Subscription.objects.create(subscription_name="Subscription 3",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[1,2],
+                                                   admin1_ids=[1, 2],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        expected = [1,3]
+        expected = [1, 3]
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
@@ -169,7 +172,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 4",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
@@ -191,19 +194,19 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 5",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        expected = [2,4]
+        expected = [2, 4]
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
         self.assertListEqual(expected, actual)
 
-        #Update urgency, severity, certainty for the subscription
+        # Update urgency, severity, certainty for the subscription
         urgency_list = ["Expected"]
         severity_list = ["Severe"]
         certainty_list = ["Possible"]
@@ -217,24 +220,25 @@ class SubscriptionManagerTestCase(TestCase):
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
-        self.assertListEqual(expected,actual)
+        self.assertListEqual(expected, actual)
 
         subscription.delete()
 
         # Test: update subscription by regions and check corresponding alerts
+
     def test_subscription_update_2(self):
         urgency_list = ["Expected", "Immediate", "Future"]
         severity_list = ["Minor", "Severe", "Moderate"]
         certainty_list = ["Likely", "Possible", "Observed"]
         subscription = Subscription.objects.create(subscription_name="Subscription 6",
-                                                    user_id=1,
-                                                    country_ids=[2],
-                                                    admin1_ids=[1, 2],
-                                                    urgency_array=urgency_list,
-                                                    severity_array=severity_list,
-                                                    certainty_array=certainty_list,
-                                                    subscribe_by=[1],
-                                                    sent_flag=0)
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[1, 2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
         expected = [1, 3]
         actual = []
         for alert in subscription.alert_set.all():
@@ -242,17 +246,18 @@ class SubscriptionManagerTestCase(TestCase):
         self.assertListEqual(expected, actual)
 
         # Update admin1 for the subscription
-        admin1_ids=[3, 4]
+        admin1_ids = [3, 4]
         subscription.admin1_ids = admin1_ids
         subscription.save()
 
-        expected = [2,4]
+        expected = [2, 4]
         actual = []
         for alert in subscription.alert_set.all():
             actual.append(alert.id)
         self.assertListEqual(expected, actual)
 
         subscription.delete()
+
     # Test: delete subscription and check many subscription - to - many field
     def test_subscription_delete_1(self):
         urgency_list = ["Expected", "Immediate", "Future"]
@@ -276,14 +281,13 @@ class SubscriptionManagerTestCase(TestCase):
         # Delete the subscription
         subscription.delete()
 
-        #Check if there is still many-to-many relationship between deleted subscriptions and
+        # Check if there is still many-to-many relationship between deleted subscriptions and
         # corresponding alerts
 
         for alert_id in actual:
-            alert = Alert.objects.filter(id = alert_id).first()
+            alert = Alert.objects.filter(id=alert_id).first()
             alert_subscriptions = alert.subscriptions.all()
             self.assertQuerysetEqual(alert_subscriptions, [])
-
 
     def test_subscription_delete_2(self):
         urgency_list = ["Expected"]
@@ -306,29 +310,29 @@ class SubscriptionManagerTestCase(TestCase):
 
         subscription.delete()
 
-        #Check if there is still many-to-many relationship between deleted subscriptions and
+        # Check if there is still many-to-many relationship between deleted subscriptions and
         # corresponding alerts
         for alert_id in actual:
-            alert = Alert.objects.filter(id = alert_id).first()
+            alert = Alert.objects.filter(id=alert_id).first()
             alert_subscriptions = alert.subscriptions.all()
             self.assertQuerysetEqual(alert_subscriptions, [])
 
     # Test: When a new subscription is created, test whether the cache that stores all alert
     # details of that subscription returns a list that matched list of expected alerts
     def test_subscription_creation_alerts_cache_1(self):
-        urgency_list = ["Expected","Future"]
+        urgency_list = ["Expected", "Future"]
         severity_list = ["Minor", "Moderate"]
         certainty_list = ["Likely", "Observed", "Possible"]
         subscription = Subscription.objects.create(subscription_name="Subscription 9",
                                                    user_id=1,
                                                    country_ids=[1],
-                                                   admin1_ids=[1,2],
+                                                   admin1_ids=[1, 2],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        #Get all subscription alerts details and put them into a list as expected value
+        # Get all subscription alerts details and put them into a list as expected value
         expected = [1, 3]
         expected_subscription_alerts_info = []
         for alert_id in expected:
@@ -336,7 +340,7 @@ class SubscriptionManagerTestCase(TestCase):
             expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
 
         actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info,actual_subscription_alerts_info)
+        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -347,7 +351,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 10",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
@@ -364,21 +368,20 @@ class SubscriptionManagerTestCase(TestCase):
 
         subscription.delete()
 
-
     def test_subscription_creation_alerts_cache_3(self):
-        urgency_list = ["Expected","Immediate","Future"]
-        severity_list = ["Minor","Severe","Moderate"]
-        certainty_list = ["Likely","Possible","Observed"]
+        urgency_list = ["Expected", "Immediate", "Future"]
+        severity_list = ["Minor", "Severe", "Moderate"]
+        certainty_list = ["Likely", "Possible", "Observed"]
         subscription = Subscription.objects.create(subscription_name="Subscription 11",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[1,2],
+                                                   admin1_ids=[1, 2],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        expected = [1,3]
+        expected = [1, 3]
         expected_subscription_alerts_info = []
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
@@ -396,7 +399,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 12",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
@@ -422,14 +425,14 @@ class SubscriptionManagerTestCase(TestCase):
         subscription = Subscription.objects.create(subscription_name="Subscription 13",
                                                    user_id=1,
                                                    country_ids=[2],
-                                                   admin1_ids=[3,4],
+                                                   admin1_ids=[3, 4],
                                                    urgency_array=urgency_list,
                                                    severity_array=severity_list,
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
 
-        #Update urgency, severity, certainty for the subscription
+        # Update urgency, severity, certainty for the subscription
         urgency_list = ["Expected"]
         severity_list = ["Severe"]
         certainty_list = ["Possible"]
@@ -439,7 +442,7 @@ class SubscriptionManagerTestCase(TestCase):
 
         subscription.save()
 
-        #Check the list of alerts that mapped updated subscription
+        # Check the list of alerts that mapped updated subscription
         expected = [4]
         expected_subscription_alerts_info = []
         for alert_id in expected:
@@ -458,22 +461,22 @@ class SubscriptionManagerTestCase(TestCase):
         severity_list = ["Minor", "Severe", "Moderate"]
         certainty_list = ["Likely", "Possible", "Observed"]
         subscription = Subscription.objects.create(subscription_name="Subscription 14",
-                                                    user_id=1,
-                                                    country_ids=[2],
-                                                    admin1_ids=[1, 2],
-                                                    urgency_array=urgency_list,
-                                                    severity_array=severity_list,
-                                                    certainty_array=certainty_list,
-                                                    subscribe_by=[1],
-                                                    sent_flag=0)
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[1, 2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
 
         # Update admin1 for the subscription
-        admin1_ids=[3, 4]
+        admin1_ids = [3, 4]
         subscription.admin1_ids = admin1_ids
         subscription.save()
 
         # Check the list of alerts that mapped updated subscription
-        expected = [2,4]
+        expected = [2, 4]
         expected_subscription_alerts_info = []
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
@@ -509,7 +512,6 @@ class SubscriptionManagerTestCase(TestCase):
         # Check if the cache does not have the record of subscription
         self.assertEqual(get_subscription_alerts(subscription.id), False)
 
-
     def test_subscription_deletion_alerts_cache_2(self):
         urgency_list = ["Expected"]
         severity_list = ["Severe"]
@@ -528,15 +530,296 @@ class SubscriptionManagerTestCase(TestCase):
         # Check if the cache does not have the record of subscription
         self.assertEqual(get_subscription_alerts(subscription.id), False)
 
-    # Test add alert with id that is not existed
-    # Test add alert is already existed
-    # Test add alert and test many subscription - to - many alerts
-    # Test add alert and test cache delete alert
-    # Test add alert is not mapped with any susbcription
+    # Test incoming alert that is not existed
+    def test_incoming_alert_that_is_not_existed(self):
+        result = map_alert_to_subscription(100)
+        expected = "Alert with id 100 is not existed"
+        self.assertEqual(expected, result)
 
-    # Test delete alert with id that is not existed
-    # Test delete alert and test many subscription - to - many alerts
-    # Test delete alert and test cache
-    # Test delete alert that is not mapped with any subscription(rare case)
+    # Test incoming alert is already converted
+    def test_incoming_alert_with_already_existed_id(self):
+        # Create New subscription that maps the incoming alert
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed"]
+        Subscription.objects.create(subscription_name="Common Subscription",
+                                    user_id=1,
+                                    country_ids=[2],
+                                    admin1_ids=[1, 2],
+                                    urgency_array=urgency_list,
+                                    severity_array=severity_list,
+                                    certainty_array=certainty_list,
+                                    subscribe_by=[1],
+                                    sent_flag=0)
+        # Try to map alert with id 2 to the new subscription, though it is already mapped to the
+        # above susbcription
+        result = map_alert_to_subscription(1)
+        expected = "Alert with id 1 is already converted and matched subscription"
+        self.assertEqual(expected, result)
 
-    # Test map all subscriptions
+    # Test incoming alert and test if it matches the existing subscription
+    def test_incoming_alert_mapping_subscription(self):
+        # create the subscription
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                          user_id=1,
+                                                          country_ids=[2],
+                                                          admin1_ids=[1, 2],
+                                                          urgency_array=urgency_list,
+                                                          severity_array=severity_list,
+                                                          certainty_array=certainty_list,
+                                                          subscribe_by=[1],
+                                                          sent_flag=0)
+
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        admin1_2 = CapFeedAdmin1.objects.get(id=2)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert.admin1s.add(admin1_1, admin1_2)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Expected",
+                                                       severity="Minor",
+                                                       certainty="Observed",
+                                                       alert=mocked_incoming_alert)
+
+        # Check if the alert maps the susbcriptions
+        result = map_alert_to_subscription(mocked_incoming_alert.id)
+        updated_subscription_ids = [common_subscription.id]
+        expected = f"Incoming Alert {mocked_incoming_alert.id} is successfully converted. " \
+                   f"Mapped Subscription id " \
+                   f"are {updated_subscription_ids}."
+        self.assertEqual(expected, result)
+
+    # Test add alert and test whether alert details is inside cache
+    def test_incoming_alert_mapping_subscription_cache(self):
+        # create the subscription
+        urgency_list = ["Very Urgent"]
+        severity_list = ["Minor"]
+        certainty_list = ["Likely"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                          user_id=1,
+                                                          country_ids=[2],
+                                                          admin1_ids=[1],
+                                                          urgency_array=urgency_list,
+                                                          severity_array=severity_list,
+                                                          certainty_array=certainty_list,
+                                                          subscribe_by=[1],
+                                                          sent_flag=0)
+
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert.admin1s.add(admin1_1)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Very Urgent",
+                                                       severity="Minor",
+                                                       certainty="Likely",
+                                                       alert=mocked_incoming_alert)
+        map_alert_to_subscription(mocked_incoming_alert.id)
+
+        # Check the list of alerts that mapped updated subscription
+        expected = [mocked_incoming_alert.id]
+        expected_subscription_alerts_info = []
+        for alert_id in expected:
+            alert = Alert.objects.get(id=alert_id)
+            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+
+        actual_subscription_alerts_info = json.loads(
+            get_subscription_alerts(common_subscription.id))
+        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+
+    # Test incoming alert when it is not mapped with any subscription
+    def test_incoming_alert_not_mapping_subscription_cache(self):
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert.admin1s.add(admin1_1)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Very Urgent",
+                                                       severity="Minor",
+                                                       certainty="Likely",
+                                                       alert=mocked_incoming_alert)
+        result = map_alert_to_subscription(mocked_incoming_alert.id)
+        expected = f"Incoming Alert {mocked_incoming_alert.id} is not mapped with any subscription."
+        self.assertEqual(expected, result)
+
+    # Test deleted alert with id that is not existed
+    def test_deleted_alert_that_is_not_existed(self):
+        result = delete_alert_to_subscription(100)
+        expected = "Alert with id 100 is not found in subscription database."
+        self.assertEqual(expected, result)
+    # Test deleted alert and test whether previously corresponded subscriptions is updated
+    def test_deleted_alert_that_previously_mapped_subscription(self):
+        # create the subscription
+        urgency_list = ["Very Urgent"]
+        severity_list = ["Minor"]
+        certainty_list = ["Likely"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                          user_id=1,
+                                                          country_ids=[2],
+                                                          admin1_ids=[1],
+                                                          urgency_array=urgency_list,
+                                                          severity_array=severity_list,
+                                                          certainty_array=certainty_list,
+                                                          subscribe_by=[1],
+                                                          sent_flag=0)
+
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert_id = mocked_incoming_alert.id
+        mocked_incoming_alert.admin1s.add(admin1_1)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Very Urgent",
+                                                       severity="Minor",
+                                                       certainty="Likely",
+                                                       alert=mocked_incoming_alert)
+
+        # Map the alert to the susbcriptions
+        map_alert_to_subscription(mocked_incoming_alert.id)
+        # Check if subscription deletes the alert in its corresponding alert list
+        result = delete_alert_to_subscription(mocked_incoming_alert_id)
+        updated_subscription_ids = [common_subscription.id]
+        expected = f"Alert {mocked_incoming_alert_id} is successfully " \
+                   f"deleted from subscription database. " \
+                   f"Updated Subscription id are " \
+                   f"{updated_subscription_ids}."
+        self.assertEqual(expected, result)
+    #Test cache that stores alerts list of the previously mapped
+    # subscription after the alert gets deleted
+    def test_deleted_alert_that_previously_mapped_subscription_cache(self):
+        # create the subscription
+        urgency_list = ["Very Urgent"]
+        severity_list = ["Minor"]
+        certainty_list = ["Likely"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                          user_id=1,
+                                                          country_ids=[2],
+                                                          admin1_ids=[1],
+                                                          urgency_array=urgency_list,
+                                                          severity_array=severity_list,
+                                                          certainty_array=certainty_list,
+                                                          subscribe_by=[1],
+                                                          sent_flag=0)
+
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert_id = mocked_incoming_alert.id
+        mocked_incoming_alert.admin1s.add(admin1_1)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Very Urgent",
+                                                       severity="Minor",
+                                                       certainty="Likely",
+                                                       alert=mocked_incoming_alert)
+
+        # Map the alert to the susbcriptions
+        map_alert_to_subscription(mocked_incoming_alert_id)
+        # Check if alerts are the same
+        delete_alert_to_subscription(mocked_incoming_alert_id)
+
+        # There should be no alert matched the subscription.
+        expected_subscription_alerts_info = []
+
+        actual_subscription_alerts_info = json.loads(
+            get_subscription_alerts(common_subscription.id))
+        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+
+    # Test deleted alert that is not mapped with any subscription(rare case)
+    def test_unmapped_deleted_alerts(self):
+        # create the subscription
+        urgency_list = ["Very Urgent"]
+        severity_list = ["Minor"]
+        certainty_list = ["Likely"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                          user_id=1,
+                                                          country_ids=[2],
+                                                          admin1_ids=[1],
+                                                          urgency_array=urgency_list,
+                                                          severity_array=severity_list,
+                                                          certainty_array=certainty_list,
+                                                          subscribe_by=[1],
+                                                          sent_flag=0)
+        # simulate the incoming alert
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert_id = mocked_incoming_alert.id
+        mocked_incoming_alert.admin1s.add(admin1_1)
+        mocked_incoming_alert.save()
+        CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Very Urgent",
+                                                       severity="Minor",
+                                                       certainty="Likely",
+                                                       alert=mocked_incoming_alert)
+        #Map and then delete the corresponding subscription.
+        #This will create a rare case that no subscription mapping the alerts
+        map_alert_to_subscription(mocked_incoming_alert_id)
+        common_subscription.delete()
+
+        # Delete alert that is not mapped with any subscription
+        result = delete_alert_to_subscription(mocked_incoming_alert_id)
+        # Check results
+        expected = f"Alert {mocked_incoming_alert_id} is successfully deleted " \
+                   f"from subscription database. "
+        self.assertEqual(expected, result)
+
+        #Test map all subscriptions to alerts
+    def test_mapping_all_subscriptions_to_alerts(self):
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed", "Possible"]
+        subscription_1 = Subscription.objects.create(subscription_name="Subscriptions1",
+                                                   user_id=1,
+                                                   country_ids=[1],
+                                                   admin1_ids=[1, 2],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+
+        urgency_list = ["Expected"]
+        severity_list = ["Severe"]
+        certainty_list = ["Possible"]
+        subscription_2 = Subscription.objects.create(subscription_name="Subscriptions2",
+                                                   user_id=1,
+                                                   country_ids=[2],
+                                                   admin1_ids=[3, 4],
+                                                   urgency_array=urgency_list,
+                                                   severity_array=severity_list,
+                                                   certainty_array=certainty_list,
+                                                   subscribe_by=[1],
+                                                   sent_flag=0)
+
+        map_subscriptions_to_alert()
+
+        expected = [1, 3]
+        actual = []
+        for alert in subscription_1.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
+
+        expected = [4]
+        actual = []
+        for alert in subscription_2.alert_set.all():
+            actual.append(alert.id)
+        self.assertListEqual(expected, actual)
