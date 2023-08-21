@@ -1,8 +1,8 @@
-import os
-import signal
 from django.core.management.base import BaseCommand
 from subscription_manager_dir.subscription_alert_mapping import map_subscriptions_to_alert
-from subscription_manager_dir.cache import cache_subscriptions_alert, clear_cache, cache_subscriptions_admins
+from subscription_manager_dir.cache import cache_subscriptions_alert, clear_cache, \
+    cache_subscriptions_admins
+
 
 class Command(BaseCommand):
     help = "Starting inputting alerts from alert database into subscription database"
@@ -18,6 +18,3 @@ class Command(BaseCommand):
         print("All alerts data that maps each subscriptions has been serialised and put into cache")
         cache_subscriptions_admins()
         print("All admin ids that has corresponding subscriptions has been cached")
-
-
-

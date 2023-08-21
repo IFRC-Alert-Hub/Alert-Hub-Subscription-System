@@ -19,7 +19,11 @@ def get_subscription_alerts(subscription_id):
         return False
     return result
 def cache_subscriptions_admins():
-    for subscription in Subscription.objects.all():
+    subscription_count = 0
+    subscriptions = Subscription.objects.all()
+    for subscription in subscriptions:
+        subscription_count += 1
+        print(f"Subscription: {subscription_count}/{len(subscriptions)}")
         cache_subscription_admins(subscription)
 
 def cache_subscription_admins(subscription):

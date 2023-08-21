@@ -32,23 +32,24 @@ def create_subscription(user, country, admin1s):
         user_id=user.id,
         country_ids=country,
         admin1_ids=admin1s,
-        urgency_array=["Immediate"],
-        severity_array=["Severe"],
+        urgency_array=["Immediate", "Future", 'Expected'],
+        severity_array=["Severe", 'Moderate', 'Minor'],
         certainty_array=['Observed', 'Likely', 'Possible'],
         subscribe_by=["Email"],
         sent_flag=3
     )
 
 
-def generate_fake_users_and_subscriptions(count, csv_filename, country_count, subscription_count):
+def generate_fake_users_and_subscriptions(count, csv_filename, subscription_count):
     users = []
+
+    with open('countries.txt', 'r', encoding='utf-8') as txt_file:
+        country_names = [line.strip() for line in txt_file]
 
     with open(csv_filename, 'w', newline='') as csvfile:
         fieldnames = ['email', 'password', 'subscription_ids']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-
-        countries = list(CapFeedCountry.objects.filter(id=161))
 
         with transaction.atomic():
             for i in range(count):
@@ -64,21 +65,19 @@ def generate_fake_users_and_subscriptions(count, csv_filename, country_count, su
                         subscriptions_to_create = []
                         subscription_ids = []
 
-                        selected_countries = countries
-
                         for _ in range(subscription_count):
-                            for country in selected_countries:
-                                admin1s = CapFeedAdmin1.objects.filter(country=country)
-                                if admin1s:
-                                    selected_admin1s = random.sample(list(admin1s),
-                                                                     random.randint(1,
-                                                                                    len(admin1s)))
-                                    country_ids = [country.id]
-                                    admin1_ids = [admin1.id for admin1 in selected_admin1s]
-
-                                    subscription = create_subscription(user, country_ids,
-                                                                       admin1_ids)
-                                    subscriptions_to_create.append(subscription)
+                            selected_country_name = random.choice(country_names)
+                            selected_country = CapFeedCountry.objects.get(
+                                name=selected_country_name)
+                            admin1s = CapFeedAdmin1.objects.filter(country=selected_country)
+                            if admin1s.exists():
+                                admin1_per_subscription = random.randint(1, len(admin1s))
+                                selected_admin1s = random.sample(list(admin1s),
+                                                                 admin1_per_subscription)
+                                country_id = selected_country.id
+                                admin1_ids = [admin1.id for admin1 in selected_admin1s]
+                                subscription = create_subscription(user, [country_id], admin1_ids)
+                                subscriptions_to_create.append(subscription)
 
                         Subscription.objects.bulk_create(subscriptions_to_create)
 
@@ -96,4 +95,4 @@ def generate_fake_users_and_subscriptions(count, csv_filename, country_count, su
 
 call_command('flush', '--noinput')
 
-generate_fake_users_and_subscriptions(1000, 'fake_users.csv', 1, 10)
+generate_fake_users_and_subscriptions(2000, 'fake_users.csv', 5)
