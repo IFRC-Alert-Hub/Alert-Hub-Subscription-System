@@ -37,7 +37,8 @@ def map_subscription_to_alert(subscription):
 
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id).prefetch_related('admin1s',
-                                                                      'capfeedalertinfo_set').first()
+                                                                      'capfeedalertinfo_set'
+                                                                      ).first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
 
     if alert is None:
@@ -82,7 +83,8 @@ def map_alert_to_subscription(alert_id):
             cache_subscription_alert(subscription)
 
         subscription_ids = [subscription.id for subscription in updated_subscriptions]
-        return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription ids are {subscription_ids}."
+        return f"Incoming Alert {alert_id} is successfully converted. " \
+               f"Mapped Subscription ids are {subscription_ids}."
 
     return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
