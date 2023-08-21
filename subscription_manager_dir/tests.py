@@ -579,7 +579,7 @@ class SubscriptionManagerTestCase(TestCase):
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         mocked_incoming_alert.admin1s.add(admin1_1, admin1_2)
         mocked_incoming_alert.save()
-        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+        CapFeedAlertinfo.objects.create(category="Met",
                                                        event="Marine Weather Statement",
                                                        urgency="Expected",
                                                        severity="Minor",
@@ -589,7 +589,8 @@ class SubscriptionManagerTestCase(TestCase):
         # Check if the alert maps the susbcriptions
         result = map_alert_to_subscription(mocked_incoming_alert.id)
         updated_subscription_ids = [common_subscription.id]
-        expected = f"Incoming Alert {mocked_incoming_alert.id} is successfully converted. Mapped Subscription id " \
+        expected = f"Incoming Alert {mocked_incoming_alert.id} is successfully converted. " \
+                   f"Mapped Subscription id " \
                    f"are {updated_subscription_ids}."
         self.assertEqual(expected, result)
 
@@ -615,7 +616,7 @@ class SubscriptionManagerTestCase(TestCase):
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         mocked_incoming_alert.admin1s.add(admin1_1)
         mocked_incoming_alert.save()
-        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+        CapFeedAlertinfo.objects.create(category="Met",
                                                        event="Marine Weather Statement",
                                                        urgency="Very Urgent",
                                                        severity="Minor",
@@ -642,7 +643,7 @@ class SubscriptionManagerTestCase(TestCase):
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
         mocked_incoming_alert.admin1s.add(admin1_1)
         mocked_incoming_alert.save()
-        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+        CapFeedAlertinfo.objects.create(category="Met",
                                                        event="Marine Weather Statement",
                                                        urgency="Very Urgent",
                                                        severity="Minor",
@@ -677,10 +678,10 @@ class SubscriptionManagerTestCase(TestCase):
         teyvat_1 = CapFeedCountry.objects.get(id=1)
         admin1_1 = CapFeedAdmin1.objects.get(id=1)
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
-        id = mocked_incoming_alert.id
+        mocked_incoming_alert_id = mocked_incoming_alert.id
         mocked_incoming_alert.admin1s.add(admin1_1)
         mocked_incoming_alert.save()
-        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+        CapFeedAlertinfo.objects.create(category="Met",
                                                        event="Marine Weather Statement",
                                                        urgency="Very Urgent",
                                                        severity="Minor",
@@ -690,9 +691,10 @@ class SubscriptionManagerTestCase(TestCase):
         # Map the alert to the susbcriptions
         map_alert_to_subscription(mocked_incoming_alert.id)
         # Check if subscription deletes the alert in its corresponding alert list
-        result = delete_alert_to_subscription(id)
+        result = delete_alert_to_subscription(mocked_incoming_alert_id)
         updated_subscription_ids = [common_subscription.id]
-        expected = f"Alert {id} is successfully deleted from subscription database. " \
+        expected = f"Alert {mocked_incoming_alert_id} is successfully " \
+                   f"deleted from subscription database. " \
                    f"Updated Subscription id are " \
                    f"{updated_subscription_ids}."
         self.assertEqual(expected, result)
@@ -716,10 +718,10 @@ class SubscriptionManagerTestCase(TestCase):
         teyvat_1 = CapFeedCountry.objects.get(id=1)
         admin1_1 = CapFeedAdmin1.objects.get(id=1)
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
-        id = mocked_incoming_alert.id
+        mocked_incoming_alert_id = mocked_incoming_alert.id
         mocked_incoming_alert.admin1s.add(admin1_1)
         mocked_incoming_alert.save()
-        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+        CapFeedAlertinfo.objects.create(category="Met",
                                                        event="Marine Weather Statement",
                                                        urgency="Very Urgent",
                                                        severity="Minor",
@@ -727,9 +729,9 @@ class SubscriptionManagerTestCase(TestCase):
                                                        alert=mocked_incoming_alert)
 
         # Map the alert to the susbcriptions
-        map_alert_to_subscription(mocked_incoming_alert.id)
+        map_alert_to_subscription(mocked_incoming_alert_id)
         # Check if alerts are the same
-        delete_alert_to_subscription(id)
+        delete_alert_to_subscription(mocked_incoming_alert_id)
 
         # There should be no alert matched the subscription.
         expected_subscription_alerts_info = []
@@ -757,7 +759,7 @@ class SubscriptionManagerTestCase(TestCase):
         teyvat_1 = CapFeedCountry.objects.get(id=1)
         admin1_1 = CapFeedAdmin1.objects.get(id=1)
         mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
-        id = mocked_incoming_alert.id
+        mocked_incoming_alert_id = mocked_incoming_alert.id
         mocked_incoming_alert.admin1s.add(admin1_1)
         mocked_incoming_alert.save()
         CapFeedAlertinfo.objects.create(category="Met",
@@ -768,7 +770,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                        alert=mocked_incoming_alert)
         #Map and then delete the corresponding subscription.
         #This will create a rare case that no subscription mapping the alerts
-        map_alert_to_subscription(id)
+        map_alert_to_subscription(mocked_incoming_alert_id)
         common_subscription.delete()
 
         # Delete alert that is not mapped with any subscription
