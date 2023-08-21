@@ -61,7 +61,7 @@ def process_immediate_alerts(subscription_id):
         alert_details = json.loads(alert.serialised_string)
         alert_info.append(alert_details)
 
-    viewer_link = "https://alert-hub-frontend.azurewebsites.net/"
+    viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
 
     context = {
         'title': subscription_name,
