@@ -60,6 +60,8 @@ CACHES = {
 }
 
 DATABASE_ROUTERS = ['DBRouter.AlertDBRouter']
+if "Test_Environment" in os.environ and os.environ["Test_Environment"] == 'True':
+    DATABASE_ROUTERS = ['TestDBRouter.TestDBRouter']
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -68,3 +70,5 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
