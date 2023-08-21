@@ -4,7 +4,7 @@ from django.utils import timezone
 from .models import Subscription, Alert
 from .cache import get_subscription_alerts
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
-
+from .subscription_alert_mapping import map_alert_to_subscription
 #Since Subscription System can only have read-access to Alert DB, the tables in external models
 # need to be simulated on Subscription DB, otherwise the test data will not be inserted.
 #This makes sure that we could mock exact data we want on these models and test the operations
@@ -528,9 +528,67 @@ class SubscriptionManagerTestCase(TestCase):
         # Check if the cache does not have the record of subscription
         self.assertEqual(get_subscription_alerts(subscription.id), False)
 
-    # Test add alert with id that is not existed
-    # Test add alert is already existed
-    # Test add alert and test many subscription - to - many alerts
+    # Test incoming alert that is not existed
+    def test_incoming_alert_that_is_not_existed(self):
+        result = map_alert_to_subscription(100)
+        expected = "Alert with id 100 is not existed"
+        self.assertEqual(expected, result)
+
+
+
+    # Test incoming alert is already converted
+    def test_incoming_alert_with_already_existed_id(self):
+        #Create New subscription that maps the incoming alert
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed"]
+        Subscription.objects.create(subscription_name="Common Subscription",
+                                    user_id=1,
+                                    country_ids=[2],
+                                    admin1_ids=[1, 2],
+                                    urgency_array=urgency_list,
+                                    severity_array=severity_list,
+                                    certainty_array=certainty_list,
+                                    subscribe_by=[1],
+                                    sent_flag=0)
+        #Try to map alert with id 2 to the new subscription, though it is already mapped to the
+        # above susbcription
+        result = map_alert_to_subscription(1)
+        expected = "Alert with id 1 is already converted and matched subscription"
+        self.assertEqual(expected, result)
+
+    # Test incoming alert and test if it matches the existing subscription
+    def test_incoming_alert_with_non_existed_id_3(self):
+        urgency_list = ["Expected", "Future"]
+        severity_list = ["Minor", "Moderate"]
+        certainty_list = ["Likely", "Observed"]
+        common_subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                            user_id=1,
+                                                            country_ids=[2],
+                                                            admin1_ids=[1, 2],
+                                                            urgency_array=urgency_list,
+                                                            severity_array=severity_list,
+                                                            certainty_array=certainty_list,
+                                                            subscribe_by=[1],
+                                                            sent_flag=0)
+
+        # simulate
+        teyvat_1 = CapFeedCountry.objects.get(id=1)
+        admin1_1 = CapFeedAdmin1.objects.get(id=1)
+        admin1_2 = CapFeedAdmin1.objects.get(id=2)
+        mocked_incoming_alert = CapFeedAlert.objects.create(sent=timezone.now(), country=teyvat_1)
+        mocked_incoming_alert.admin1s.add(admin1_1, admin1_2)
+        mocked_incoming_alert.save()
+        alert_info_1 = CapFeedAlertinfo.objects.create(category="Met",
+                                                       event="Marine Weather Statement",
+                                                       urgency="Expected",
+                                                       severity="Minor",
+                                                       certainty="Observed",
+                                                       alert=mocked_incoming_alert)
+
+        # Check if the cache does not have the record of subscription
+
+
     # Test add alert and test cache delete alert
     # Test add alert is not mapped with any susbcription
 

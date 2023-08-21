@@ -43,8 +43,8 @@ def delete_subscription_admins_cache(subscription):
             except ValueError:
                 pass
 
-def get_admin_cache(subscription_id):
-    return cache.get("admin"+str(subscription_id))
+def get_admin_cache(admin_id):
+    return cache.get("admin"+str(admin_id))
 
 def clear_cache():
     cache.clear()

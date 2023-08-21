@@ -34,27 +34,29 @@ def map_subscription_to_alert(subscription):
 
 
 def map_alert_to_subscription(alert_id):
-    alert = CapFeedAlert.objects.filter(id=alert_id).first()
+    alert = None
+    try:
+        alert = CapFeedAlert.objects.get(id=alert_id)
+    except CapFeedAlert.DoesNotExist:
+            return f"Alert with id {alert_id} is not existed"
     converted_alert = Alert.objects.filter(id=alert_id).first()
-    if alert is None:
-        return f"Alert with id {alert_id} is not existed"
-    if converted_alert is not None:
+    if converted_alert != None:
         return f"Alert with id {alert_id} is already converted and matched subscription"
     #alert_admin1_ids = []
-    subscription_ids = {}
+    subscription_ids = set()
     for admin1 in alert.admin1s.all():
         admin_subscriptions = get_admin_cache(admin1.id)
         if admin_subscriptions != None:
             subscription_ids.update(admin_subscriptions)
         #alert_admin1_ids.append(admin1.id)
     #subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
-
     internal_alert = None
     updated_subscription_ids = []
     #for subscription in subscriptions:
     for subscription_id in subscription_ids:
-        subscription = Subscription.objects.filter(id=subscription_id).first()
-        if subscription == None:
+        try:
+            subscription = Subscription.objects.get(id=subscription_id)
+        except Subscription.DoesNotExist:
             continue
         for info in alert.capfeedalertinfo_set.all():
             if info.severity in subscription.severity_array and \
