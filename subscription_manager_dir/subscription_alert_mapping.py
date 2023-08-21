@@ -85,7 +85,7 @@ def map_alert_to_subscription(alert_id):
 def delete_alert_to_subscription(alert_id):
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
     if alert_to_be_deleted is None:
-        return f"Alert with id {alert_id} has not been found in subscription database."
+        return f"Alert with id {alert_id} is not found in subscription database."
 
     subscriptions = alert_to_be_deleted.subscriptions.all()
     updated_subscription_ids = []
