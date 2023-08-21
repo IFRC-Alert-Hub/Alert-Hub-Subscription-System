@@ -774,7 +774,7 @@ class SubscriptionManagerTestCase(TestCase):
         common_subscription.delete()
 
         # Delete alert that is not mapped with any subscription
-        result = delete_alert_to_subscription(id)
+        result = delete_alert_to_subscription(mocked_incoming_alert_id)
         # Check results
-        expected = f"Alert {id} is successfully deleted from subscription database. "
+        expected = f"Alert {mocked_incoming_alert_id} is successfully deleted from subscription database. "
         self.assertEqual(expected, result)
