@@ -23,7 +23,7 @@ class SubscriptionUser(HttpUser):
 
     @task
     def send_requests(self):
-        # url = f"/subscription_manager/get_subscription_alerts/6/"
+        url = f"/subscription_manager/get_subscription_alerts/10/"
 
-        url = f"/subscription_manager/get_subscription_alerts_in_real_time/6/"
+        # url = f"/subscription_manager/get_subscription_alerts_in_real_time/6/"
         self.client.get(url)

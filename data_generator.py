@@ -36,7 +36,7 @@ def create_subscription(user, country, admin1s):
         severity_array=["Severe"],
         certainty_array=['Observed', 'Likely', 'Possible'],
         subscribe_by=["Email"],
-        sent_flag=0
+        sent_flag=3
     )
 
 
@@ -62,7 +62,7 @@ def generate_fake_users_and_subscriptions(count, csv_filename, country_count, su
                         users.append(user)
 
                         subscriptions_to_create = []
-                        subscription_ids = ""
+                        subscription_ids = []
 
                         selected_countries = countries
 
@@ -79,13 +79,14 @@ def generate_fake_users_and_subscriptions(count, csv_filename, country_count, su
                                     subscription = create_subscription(user, country_ids,
                                                                        admin1_ids)
                                     subscriptions_to_create.append(subscription)
-                                    subscription_ids = ', '.join(
-                                        [str(subscription.id) for subscription in
-                                         subscriptions_to_create])
 
                         Subscription.objects.bulk_create(subscriptions_to_create)
+
+                        # Retrieve saved subscription IDs
+                        subscription_ids = [str(subscription.id) for subscription in
+                                            subscriptions_to_create]
                         writer.writerow({'email': email, 'password': password,
-                                         'subscription_ids': subscription_ids})
+                                         'subscription_ids': ', '.join(subscription_ids)})
                         break
                     except IntegrityError as e:
                         print(f"IntegrityError: {e}. Retrying with a different email.")
