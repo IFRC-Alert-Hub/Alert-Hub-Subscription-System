@@ -1,13 +1,16 @@
 import json
 
-from .cache import cache_subscription_alert, get_admin_cache
+from django.db import transaction
+
+from .cache import cache_subscription_alert
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
 
 
 def map_subscriptions_to_alert():
-    for subscription in Subscription.objects.all():
+    subscriptions = Subscription.objects.all()
+    for subscription in subscriptions:
         map_subscription_to_alert(subscription)
 
 
@@ -34,50 +37,54 @@ def map_subscription_to_alert(subscription):
 
 
 def map_alert_to_subscription(alert_id):
-    alert = None
-    try:
-        alert = CapFeedAlert.objects.get(id=alert_id)
-    except CapFeedAlert.DoesNotExist:
-        return f"Alert with id {alert_id} is not existed"
+    alert = CapFeedAlert.objects.filter(id=alert_id). \
+        prefetch_related('admin1s', 'capfeedalertinfo_set').first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
+
+    if alert is None:
+        return f"Alert with id {alert_id} is not existed"
+
     if converted_alert is not None:
         return f"Alert with id {alert_id} is already converted and matched subscription"
-    #alert_admin1_ids = []
-    subscription_ids = set()
-    for admin1 in alert.admin1s.all():
-        admin_subscriptions = get_admin_cache(admin1.id)
-        if admin_subscriptions is not None:
-            subscription_ids.update(admin_subscriptions)
-        #alert_admin1_ids.append(admin1.id)
-    #subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
+
+    alert_admin1_ids = [admin1.id for admin1 in alert.admin1s.all()]
+    subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
+
     internal_alert = None
-    updated_subscription_ids = []
-    #for subscription in subscriptions:
-    for subscription_id in subscription_ids:
-        try:
-            subscription = Subscription.objects.get(id=subscription_id)
-        except Subscription.DoesNotExist:
-            continue
-        for info in alert.capfeedalertinfo_set.all():
-            if info.severity in subscription.severity_array and \
-                    info.certainty in subscription.certainty_array and \
-                    info.urgency in subscription.urgency_array:
+    updated_subscriptions = []
+
+    with transaction.atomic():
+        for subscription in subscriptions:
+            matching_info = None
+
+            for info in alert.capfeedalertinfo_set.all():
+                if info.severity in subscription.severity_array and \
+                        info.certainty in subscription.certainty_array and \
+                        info.urgency in subscription.urgency_array:
+                    matching_info = info
+                    break
+
+            if matching_info:
                 if internal_alert is None:
                     internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
                         alert.to_dict()))
-                    internal_alert.save()
-                internal_alert.subscriptions.add(subscription)
-                # Update the cache when related alerts are added
-                cache_subscription_alert(subscription)
-                updated_subscription_ids.append(subscription.id)
-                break
 
-        if subscription.sent_flag == 0:
-            process_immediate_alerts(subscription.id)
+                updated_subscriptions.append(subscription)
 
-    if len(updated_subscription_ids) != 0:
-        return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription id are " \
-               f"{updated_subscription_ids}."
+                if subscription.sent_flag == 0:
+                    process_immediate_alerts(subscription.id)
+
+        if internal_alert:
+            internal_alert.subscriptions.add(*updated_subscriptions)
+            internal_alert.save()
+
+    if updated_subscriptions:
+        for subscription in updated_subscriptions:
+            cache_subscription_alert(subscription)
+
+        subscription_ids = [subscription.id for subscription in updated_subscriptions]
+        return f"Incoming Alert {alert_id} is successfully converted. " \
+               f"Mapped Subscription id are {subscription_ids}."
 
     return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
@@ -109,6 +116,7 @@ def print_all_admin1s_in_country(country_id):
     admin1s = CapFeedAdmin1.objects.filter(country__id=country_id)
     for admin in admin1s:
         ids.append(admin.id)
+
 
 def get_subscription_alerts_without_cache(subscription_id):
     subscription = Subscription.objects.filter(id=subscription_id).first()

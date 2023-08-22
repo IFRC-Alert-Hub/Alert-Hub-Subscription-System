@@ -11,7 +11,6 @@ from project import settings
 from .cache import cache_subscriptions_alert
 
 
-
 @shared_task(bind=True)
 def send_subscription_email(self, user_id, subject, template_name, context=None):
     custom_user = get_user_model()
@@ -31,7 +30,7 @@ def send_subscription_email(self, user_id, subject, template_name, context=None)
         subject=subject,
         message=strip_tags(message),
         html_message=message,
-        from_email=settings.EMAIL_HOST_USER,
+        from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
         fail_silently=True,
     )
@@ -61,7 +60,7 @@ def process_immediate_alerts(subscription_id):
         alert_details = json.loads(alert.serialised_string)
         alert_info.append(alert_details)
 
-    viewer_link = "https://alert-hub-frontend.azurewebsites.net/"
+    viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
 
     context = {
         'title': subscription_name,
@@ -70,10 +69,11 @@ def process_immediate_alerts(subscription_id):
         'alerts': alert_info,
     }
 
-    send_subscription_email.delay(user_id, 'New immediate Alerts Matching Your Subscription',
+    send_subscription_email.delay(user_id, '[IFRC] New alert update from your subscriptions',
                                   'subscription_email.html', context)
 
     related_alerts.update(sent=True)
+
 
 @shared_task
 def process_non_immediate_alerts(sent_flag):
