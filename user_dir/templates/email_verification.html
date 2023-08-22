@@ -1,23 +1,14 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h2>Hello {{ user.email }},</h2>
+<h2>Confirm your email address.</h2>
 
 <p>
-Here is your verification code to verify your email address:
+Welcome to IFRC Alert Hub. Use this verification code to complete sign up.
 </p>
 
 <p>
-<a href="{{ verification_token }}">{{ verification_token }}</a>
-</p>
-
-<p>
-If you did not request this email, you can ignore it.
-</p>
-
-<p>
-Best,<br>
-IFRC Alert hub
+    Verification Code: <a href="{{ verification_token }}">{{ verification_token }}</a>
 </p>
 
 </body>

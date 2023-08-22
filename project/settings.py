@@ -214,7 +214,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'uclalert0@gmail.com'
 EMAIL_HOST_PASSWORD = 'lqlauyiauhrtvoif'
-DEFAULT_FROM_EMAIL = 'Celery <uclalert0@gmail.com>'
+DEFAULT_FROM_EMAIL = 'IFRC Alert Hub'
 
 CACHES = {
     'default': {

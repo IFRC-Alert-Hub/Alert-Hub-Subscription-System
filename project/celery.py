@@ -18,20 +18,15 @@ app = Celery('project')
 
 app.conf.beat_schedule = {
     'process-every-12-hours': {
-        'task': 'project.subscription_manager_dir.tasks.process_non_immediate_alerts',
+        'task': 'subscription_manager_dir.tasks.process_non_immediate_alerts',
         'schedule': timedelta(hours=12),
         'kwargs': {'sent_flag': 1},
     },
     'process-every-day': {
-        'task': 'project.subscription_manager_dir.tasks.process_non_immediate_alerts',
+        'task': 'subscription_manager_dir.tasks.process_non_immediate_alerts',
         'schedule': timedelta(days=1),
         'kwargs': {'sent_flag': 2},
     },
-    # 'process-every-week': {
-    #     'task': 'project.subscription_manager_dir.tasks.process_non_immediate_alerts',
-    #     'schedule': timedelta(weeks=1),
-    #     'kwargs': {'sent_flag': 3},
-    # }
 }
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

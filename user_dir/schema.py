@@ -237,7 +237,7 @@ class SendNewVerifyEmail(graphene.Mutation):
             'verification_token': email_verification_token,
         }
 
-        send_email.delay(new_email, 'Verify your new email.', 'email_verification.html', context)
+        send_email.delay(new_email, '[IFRC] Verify your email address', 'email_verification.html', context)
 
         return SendNewVerifyEmail(success=True)
 
