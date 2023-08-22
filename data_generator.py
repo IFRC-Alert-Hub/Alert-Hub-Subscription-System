@@ -95,4 +95,4 @@ def generate_fake_users_and_subscriptions(count, csv_filename, subscription_coun
 
 call_command('flush', '--noinput')
 
-generate_fake_users_and_subscriptions(2000, 'fake_users.csv', 5)
+generate_fake_users_and_subscriptions(2500, 'fake_users.csv', 4)
