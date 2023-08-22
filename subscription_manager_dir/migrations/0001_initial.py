@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
             name='Alert',
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('serialised_string', models.CharField(max_length=255)),
+                ('serialised_string', models.CharField(max_length=1000)),
             ],
         ),
         migrations.CreateModel(
