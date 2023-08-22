@@ -4,10 +4,10 @@ from django.http import HttpResponse
 from .cache import get_subscription_alerts
 from .subscription_alert_mapping import get_subscription_alerts_without_cache
 def get_subscirption_alerts(request, subscription_id):
-    dictionary = get_subscription_alerts(subscription_id)
-    result = json.dumps(list(dictionary.values()))
-    if not result:
+    result_or_false = get_subscription_alerts(subscription_id)
+    if not result_or_false:
         return HttpResponse("Subscription is not found!", status=404)
+    result = json.dumps(list(result_or_false.values()))
     return HttpResponse(result)
 
 
