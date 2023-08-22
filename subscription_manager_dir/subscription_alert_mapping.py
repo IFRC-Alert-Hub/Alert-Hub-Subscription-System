@@ -2,7 +2,7 @@ import json
 
 from django.db import transaction
 
-from .cache import cache_subscription_alert, get_admin_cache
+from .cache import cache_subscription_alert
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
@@ -37,8 +37,8 @@ def map_subscription_to_alert(subscription):
 
 
 def map_alert_to_subscription(alert_id):
-    alert = CapFeedAlert.objects.filter(id=alert_id).prefetch_related('admin1s',
-                                                                      'capfeedalertinfo_set').first()
+    alert = CapFeedAlert.objects.filter(id=alert_id). \
+        prefetch_related('admin1s', 'capfeedalertinfo_set').first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
 
     if alert is None:
@@ -83,7 +83,8 @@ def map_alert_to_subscription(alert_id):
             cache_subscription_alert(subscription)
 
         subscription_ids = [subscription.id for subscription in updated_subscriptions]
-        return f"Incoming Alert {alert_id} is successfully converted. Mapped Subscription id are {subscription_ids}."
+        return f"Incoming Alert {alert_id} is successfully converted. " \
+               f"Mapped Subscription id are {subscription_ids}."
 
     return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
