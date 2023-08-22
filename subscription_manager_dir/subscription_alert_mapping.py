@@ -2,7 +2,7 @@ import json
 
 from django.db import transaction
 
-from .cache import cache_incoming_alert_for_subscription, cache_deleted_alert_for_subscription
+from .cache import dynamic_cache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
@@ -15,6 +15,8 @@ def map_subscriptions_to_alert():
 
 
 def map_subscription_to_alert(subscription):
+    cache_instance = dynamic_cache()
+    cache_instance.delete_subscription_alerts(subscription.id)
     for admin1_id in subscription.admin1_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
         if admin1 is None:
@@ -35,11 +37,14 @@ def map_subscription_to_alert(subscription):
                                                                   alert.to_dict()))
                         internal_alert.save()
                     internal_alert.subscriptions.add(subscription)
-                    cache_incoming_alert_for_subscription(subscription,internal_alert)
+                    cache_instance.cache_incoming_alert_for_subscription(subscription,
+                                                                         internal_alert)
                     break
+    cache_instance.update_cache()
 
 
 def map_alert_to_subscription(alert_id):
+    cache_instance = dynamic_cache()
     alert = CapFeedAlert.objects.filter(id=alert_id). \
         prefetch_related('admin1s', 'capfeedalertinfo_set').first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
@@ -82,8 +87,8 @@ def map_alert_to_subscription(alert_id):
             internal_alert.save()
             #Added alerts details to subscription alert cache
             for subscription in updated_subscriptions:
-                cache_incoming_alert_for_subscription(subscription, internal_alert)
-
+                cache_instance.cache_incoming_alert_for_subscription(subscription, internal_alert)
+    cache_instance.update_cache()
     if updated_subscriptions:
         subscription_ids = [subscription.id for subscription in updated_subscriptions]
         return f"Incoming Alert {alert_id} is successfully converted. " \
@@ -92,7 +97,10 @@ def map_alert_to_subscription(alert_id):
     return f"Incoming Alert {alert_id} is not mapped with any subscription."
 
 
+#def formulate_serialised_
+
 def delete_alert_to_subscription(alert_id):
+    cache_instance = dynamic_cache()
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
     if alert_to_be_deleted is None:
         return f"Alert with id {alert_id} is not found in subscription database."
@@ -102,10 +110,12 @@ def delete_alert_to_subscription(alert_id):
     for subscription in subscriptions:
         subscription.alert_set.remove(alert_to_be_deleted)
         # Update the cache when related alerts are removed
-        cache_deleted_alert_for_subscription(subscription,alert_to_be_deleted)
+        cache_instance.cache_deleted_alert_for_subscription(subscription,alert_to_be_deleted)
         updated_subscription_ids.append(subscription.id)
 
     alert_to_be_deleted.delete()
+    cache_instance.update_cache()
+
     if len(updated_subscription_ids) != 0:
         return f"Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \

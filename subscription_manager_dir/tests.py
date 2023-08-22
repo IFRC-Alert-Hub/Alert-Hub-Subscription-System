@@ -6,7 +6,7 @@ from .cache import get_subscription_alerts, clear_cache
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
 from .subscription_alert_mapping import map_alert_to_subscription,\
     delete_alert_to_subscription, map_subscriptions_to_alert
-
+import time
 
 # Since Subscription System can only have read-access to Alert DB, the tables in external models
 # need to be simulated on Subscription DB, otherwise the test data will not be inserted.
@@ -632,7 +632,6 @@ class SubscriptionManagerTestCase(TestCase):
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
             expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
-
         actual_subscription_alerts_info = get_subscription_alerts(common_subscription.id)
         self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
