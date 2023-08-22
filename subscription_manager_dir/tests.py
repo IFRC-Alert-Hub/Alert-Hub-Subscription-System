@@ -2,7 +2,7 @@ import json
 from django.test import TestCase
 from django.utils import timezone
 from .models import Subscription, Alert
-from .cache import get_subscription_alerts
+from .cache import get_subscription_alerts, clear_cache
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
 from .subscription_alert_mapping import map_alert_to_subscription,\
     delete_alert_to_subscription, map_subscriptions_to_alert
@@ -19,6 +19,7 @@ class SubscriptionManagerTestCase(TestCase):
     # Setup data for the tests
     @classmethod
     def setUpClass(cls):
+        clear_cache()
         teyvat_1 = CapFeedCountry.objects.create(name="Teyvat_1")
         teyvat_1.save()
         teyvat_2 = CapFeedCountry.objects.create(name="Teyvat_2")
@@ -334,13 +335,13 @@ class SubscriptionManagerTestCase(TestCase):
                                                    sent_flag=0)
         # Get all subscription alerts details and put them into a list as expected value
         expected = [1, 3]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -358,13 +359,13 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [4]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -382,13 +383,13 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [1, 3]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -406,13 +407,13 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [2, 4]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -444,13 +445,13 @@ class SubscriptionManagerTestCase(TestCase):
 
         # Check the list of alerts that mapped updated subscription
         expected = [4]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -477,13 +478,13 @@ class SubscriptionManagerTestCase(TestCase):
 
         # Check the list of alerts that mapped updated subscription
         expected = [2, 4]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(get_subscription_alerts(subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
         subscription.delete()
 
@@ -627,14 +628,13 @@ class SubscriptionManagerTestCase(TestCase):
 
         # Check the list of alerts that mapped updated subscription
         expected = [mocked_incoming_alert.id]
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
         for alert_id in expected:
             alert = Alert.objects.get(id=alert_id)
-            expected_subscription_alerts_info.append(json.loads(alert.serialised_string))
+            expected_subscription_alerts_info[alert_id] = json.loads(alert.serialised_string)
 
-        actual_subscription_alerts_info = json.loads(
-            get_subscription_alerts(common_subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(common_subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
     # Test incoming alert when it is not mapped with any subscription
     def test_incoming_alert_not_mapping_subscription_cache(self):
@@ -732,15 +732,14 @@ class SubscriptionManagerTestCase(TestCase):
 
         # Map the alert to the susbcriptions
         map_alert_to_subscription(mocked_incoming_alert_id)
-        # Check if alerts are the same
+        # Delete alerts to the subscriptions
         delete_alert_to_subscription(mocked_incoming_alert_id)
 
         # There should be no alert matched the subscription.
-        expected_subscription_alerts_info = []
+        expected_subscription_alerts_info = dict()
 
-        actual_subscription_alerts_info = json.loads(
-            get_subscription_alerts(common_subscription.id))
-        self.assertListEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
+        actual_subscription_alerts_info = get_subscription_alerts(common_subscription.id)
+        self.assertDictEqual(expected_subscription_alerts_info, actual_subscription_alerts_info)
 
     # Test deleted alert that is not mapped with any subscription(rare case)
     def test_unmapped_deleted_alerts(self):
