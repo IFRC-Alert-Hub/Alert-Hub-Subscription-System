@@ -25,7 +25,7 @@ class Subscription(models.Model):
         return alerts_list
 
     def save(self, *args, force_insert=False, force_update=False, **kwargs):
-        from subscription_manager_dir import subscription_alert_mapping, cache
+        from subscription_manager_dir import subscription_alert_mapping
         super().save(force_insert, force_update, *args, **kwargs)
         self.alert_set.clear()
         subscription_alert_mapping.map_subscription_to_alert(self)
@@ -34,7 +34,7 @@ class Subscription(models.Model):
 
     def delete(self, *args, force_insert=False, force_update=False):
         from subscription_manager_dir import cache
-        cache_instance = cache.dynamic_cache()
+        cache_instance = cache.DynamicCache()
         cache_instance.delete_subscription_alerts(self.id)
         #cache.delete_subscription_admins_cache(self)
         super().delete(force_insert, force_update)
