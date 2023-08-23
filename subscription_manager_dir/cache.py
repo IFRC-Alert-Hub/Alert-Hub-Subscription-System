@@ -2,11 +2,11 @@ import json
 from django.core.cache import cache
 from subscription_dir.models import Subscription
 
-class dynamic_cache:
+class DynamicCache:
     def __init__(self):
         subscription_dict = cache.get("subscription")
         if subscription_dict is None:
-            subscription_dict = dict()
+            subscription_dict = {}
         self.dynamic_cache_dict = subscription_dict
 
     def cache_incoming_alert_for_subscription(self, subscription, alert):
@@ -29,7 +29,7 @@ class dynamic_cache:
 
 def cache_subscriptions_alert():
     subscriptions = Subscription.objects.all()
-    for subscription in subscriptions:
+    for _ in subscriptions:
         pass
         #cache_subscription_alert(subscription)
 #def cache_subscription_alert(subscription):

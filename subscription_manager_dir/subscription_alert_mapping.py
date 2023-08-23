@@ -2,7 +2,7 @@ import json
 
 from django.db import transaction
 
-from .cache import dynamic_cache
+from .cache import DynamicCache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Alert, Subscription
 from .tasks import process_immediate_alerts
@@ -15,7 +15,7 @@ def map_subscriptions_to_alert():
 
 
 def map_subscription_to_alert(subscription):
-    cache_instance = dynamic_cache()
+    cache_instance = DynamicCache()
     cache_instance.delete_subscription_alerts(subscription.id)
     for admin1_id in subscription.admin1_ids:
         admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
@@ -44,7 +44,7 @@ def map_subscription_to_alert(subscription):
 
 
 def map_alert_to_subscription(alert_id):
-    cache_instance = dynamic_cache()
+    cache_instance = DynamicCache()
     alert = CapFeedAlert.objects.filter(id=alert_id). \
         prefetch_related('admin1s', 'capfeedalertinfo_set').first()
     converted_alert = Alert.objects.filter(id=alert_id).first()
@@ -100,7 +100,7 @@ def map_alert_to_subscription(alert_id):
 #def formulate_serialised_
 
 def delete_alert_to_subscription(alert_id):
-    cache_instance = dynamic_cache()
+    cache_instance = DynamicCache()
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
     if alert_to_be_deleted is None:
         return f"Alert with id {alert_id} is not found in subscription database."
