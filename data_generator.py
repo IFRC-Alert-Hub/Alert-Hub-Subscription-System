@@ -27,17 +27,43 @@ def create_user(email, password):
 
 
 def create_subscription(user, country, admin1s):
-    return Subscription(
-        subscription_name=fake.sentence()[:-1],
-        user_id=user.id,
-        country_ids=country,
-        admin1_ids=admin1s,
-        urgency_array=["Immediate", "Future", 'Expected'],
-        severity_array=["Severe", 'Moderate', 'Minor'],
-        certainty_array=['Observed', 'Likely', 'Possible'],
-        subscribe_by=["Email"],
-        sent_flag=3
-    )
+    type = random.randint(1, 3)
+    if type == 1:
+        return Subscription(
+            subscription_name=fake.sentence()[:-1],
+            user_id=user.id,
+            country_ids=country,
+            admin1_ids=admin1s,
+            urgency_array=["Immediate"],
+            severity_array=["Severe"],
+            certainty_array=['Observed'],
+            subscribe_by=["Email"],
+            sent_flag=3
+        )
+    elif type == 2:
+        return Subscription(
+            subscription_name=fake.sentence()[:-1],
+            user_id=user.id,
+            country_ids=country,
+            admin1_ids=admin1s,
+            urgency_array=['Expected'],
+            severity_array=['Minor'],
+            certainty_array=['Possible'],
+            subscribe_by=["Email"],
+            sent_flag=3
+        )
+    else:
+        return Subscription(
+            subscription_name=fake.sentence()[:-1],
+            user_id=user.id,
+            country_ids=country,
+            admin1_ids=admin1s,
+            urgency_array=["Future"],
+            severity_array=['Moderate'],
+            certainty_array=['Likely'],
+            subscribe_by=["Email"],
+            sent_flag=3
+        )
 
 
 def generate_fake_users_and_subscriptions(count, csv_filename, subscription_count):
