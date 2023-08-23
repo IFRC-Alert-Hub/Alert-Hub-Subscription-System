@@ -66,6 +66,11 @@ class DeleteJWTMiddleware:
                     request.delete_jwt_cookie = True
                 response = JsonResponse({'error': 'Invalid token provided. Please login again.'},
                                         status=401)
+            if "Invalid token" in str(exeception):
+                if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
+                    request.delete_jwt_cookie = True
+                response = JsonResponse({'error': 'Invalid token provided. Please login again.'},
+                                        status=401)
 
         if response is None:
             response = JsonResponse({'error': 'Unknown error'}, status=500)
