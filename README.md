@@ -73,11 +73,14 @@ python manage.py collectstatics
 python manage.py runserver
 ```
 
-7. Start celery worker and sceduler:
+7. Start celery worker and scheduler:
 ```bash
 celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
+
+## Datasources
+Our datasources of boundaries of administrative areas come from [GADM data](https://gadm.org/data.html).
 
 ## Others
 
