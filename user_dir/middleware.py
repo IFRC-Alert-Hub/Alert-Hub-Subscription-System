@@ -71,7 +71,6 @@ class DeleteJWTMiddleware:
         response = None
         try:
             response = self.get_response(request)
-            print(response)
         except InvalidJwtIdError:
             if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
                 request.delete_jwt_cookie = True
