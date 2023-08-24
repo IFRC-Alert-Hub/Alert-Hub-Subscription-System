@@ -82,7 +82,10 @@ celery -A project beat -l info
 ## Datasources
 Our datasources of boundaries of administrative areas come from [GADM data](https://gadm.org/data.html).
 
-## Others
+## Design Documentation
+Our design documentations are stored in [Google Drive](https://drive.google.com/drive/folders/1nMoEtwBAnaMjTywjXBGRNS1OZD4mPgUo)
+
+## Reliability
 
 ### Health Check Endpoint
 
