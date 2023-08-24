@@ -86,8 +86,10 @@ celery -A project beat -l info
 To ensure service availability, the following endpoint can be leveraged for health check:
 
 ```bash
-http://$HOST:$PORT/health_check/ 
+http://$HOST:$PORT/health_check/
 ```
+
+More description can be referred from [health check description](documents/health_check.md).
 
 ### DB Backup
 
@@ -103,4 +105,4 @@ python manage.py dbbackup
 python manage.py dbrestore
 ```
 
-More description can be referred from [dbbackup description](dbbackup/dbbackup.md).
+More description can be referred from [dbbackup description](documents/dbbackup.md).
