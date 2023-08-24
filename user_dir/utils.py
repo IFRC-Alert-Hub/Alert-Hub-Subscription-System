@@ -35,5 +35,6 @@ def _validate_jti(payload, user, context=None):
     if "jti" not in payload:
         raise MissingRequiredClaimError("jti")
     if payload["jti"] != user.jti:
-        context.user.should_logout = True
+        if context is not None:
+            context.user.should_logout = True
         raise InvalidJwtIdError("Invalid JWT id")
