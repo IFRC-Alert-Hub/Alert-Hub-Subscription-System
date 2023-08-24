@@ -34,5 +34,5 @@ def _validate_jti(payload, user):
         return
     if "jti" not in payload:
         raise MissingRequiredClaimError("jti")
-    if payload["jti"] != user.jti:
-        raise InvalidJwtIdError("Invalid JWT id")
+    # if payload["jti"] != user.jti:
+    #     raise InvalidJwtIdError("Invalid JWT id")
