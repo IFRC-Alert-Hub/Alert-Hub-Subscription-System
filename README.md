@@ -73,21 +73,29 @@ python manage.py collectstatics
 python manage.py runserver
 ```
 
-7. Start celery worker and sceduler:
+7. Start celery worker and scheduler:
 ```bash
 celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
 
-## Others
+## Datasources
+Our datasources of boundaries of administrative areas come from [GADM data](https://gadm.org/data.html).
+
+## Design Documentation
+Our design documentations are stored in [Google Drive](https://drive.google.com/drive/folders/1nMoEtwBAnaMjTywjXBGRNS1OZD4mPgUo)
+
+## Reliability
 
 ### Health Check Endpoint
 
 To ensure service availability, the following endpoint can be leveraged for health check:
 
 ```bash
-http://$HOST:$PORT/health_check/ 
+http://$HOST:$PORT/health_check/
 ```
+
+More description can be referred from [health check description](documents/health_check.md).
 
 ### DB Backup
 
@@ -103,4 +111,4 @@ python manage.py dbbackup
 python manage.py dbrestore
 ```
 
-More description can be referred from [dbbackup description](dbbackup/dbbackup.md).
+More description can be referred from [dbbackup description](documents/dbbackup.md).

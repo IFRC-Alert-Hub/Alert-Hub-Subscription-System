@@ -1,3 +1,5 @@
+import datetime
+
 import django
 from django.contrib.auth.middleware import (
     AuthenticationMiddleware as DjangoAuthenticationMiddleware,
@@ -118,3 +120,7 @@ class DeleteJWTMiddleware:
             kwargs["samesite"] = jwt_settings.JWT_COOKIE_SAMESITE
 
         response.delete_cookie(key, **kwargs)
+        expiration_time = datetime.datetime.now() - datetime.timedelta(days=1)
+
+        # Use set_cookie() to set the cookie with the past expiration time
+        response.set_cookie(key, value="", expires=expiration_time, **kwargs)

@@ -40,4 +40,4 @@ fake_user.csv
 dump.rdb
 
 # postgresql backup
-*.psql.bin
+#*.psql.bin
