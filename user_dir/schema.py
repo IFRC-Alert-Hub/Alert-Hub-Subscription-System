@@ -328,6 +328,7 @@ class Logout(graphene.Mutation):
                     jwt_settings.JWT_COOKIE_NAME in context.COOKIES
                     and getattr(context, "jwt_cookie", False)
             )
+            info.context.user.should_logout = True
 
             return cls(success=True, deleted=context.delete_jwt_cookie)
         except AttributeError as error:

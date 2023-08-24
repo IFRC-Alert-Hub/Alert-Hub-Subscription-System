@@ -37,11 +37,17 @@ class _GraphqlDisabledMiddlewareMixin:
             return response
 
 
+def django_logout(request):
+    pass
+
+
 class AuthenticationMiddleware(
     _GraphqlDisabledMiddlewareMixin, DjangoAuthenticationMiddleware
 ):
     def process_request(self, request):
         if self.is_graphql_request(request):
+            if request.user.should_logout:
+                django_logout(request)
             request.user = AnonymousUser()
 
         return super().process_request(request)
