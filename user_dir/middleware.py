@@ -60,14 +60,16 @@ class DeleteJWTMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        response = None
         try:
             response = self.get_response(request)
-        except InvalidJwtIdError as exception:
+        except InvalidJwtIdError:
             if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
                 request.delete_jwt_cookie = True
                 self.my_delete_cookie(response, jwt_settings.JWT_COOKIE_NAME)
             response = JsonResponse({'error': 'Invalid token provided. Please login again.'},
                                     status=401)
+        # type: ignore
         except Exception as exeception:
             if "NoneType object has no attribute 'is_authenticated'" in str(exeception):
                 if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
