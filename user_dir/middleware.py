@@ -12,6 +12,8 @@ from django.contrib.sessions.middleware import (
 from django.http import JsonResponse
 from graphql_jwt.settings import jwt_settings
 
+from user_dir.utils import InvalidJwtIdError
+
 
 class _GraphqlDisabledMiddlewareMixin:
     @staticmethod
@@ -60,6 +62,12 @@ class DeleteJWTMiddleware:
     def __call__(self, request):
         try:
             response = self.get_response(request)
+        except InvalidJwtIdError as exception:
+            if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
+                request.delete_jwt_cookie = True
+                self.my_delete_cookie(response, jwt_settings.JWT_COOKIE_NAME)
+            response = JsonResponse({'error': 'Invalid token provided. Please login again.'},
+                                    status=401)
         except Exception as exeception:
             if "NoneType object has no attribute 'is_authenticated'" in str(exeception):
                 if hasattr(request, 'COOKIES') and jwt_settings.JWT_COOKIE_NAME in request.COOKIES:
