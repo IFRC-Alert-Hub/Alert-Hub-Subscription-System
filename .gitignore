@@ -34,7 +34,7 @@ yarn-error.log*
 __pycache__/
 
 /staticfiles
-fake_user.csv
+fake_users.csv
 
 # redis
 dump.rdb
