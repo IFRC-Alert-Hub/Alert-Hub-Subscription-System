@@ -1,8 +1,5 @@
-import json
-
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-
 
 class Subscription(models.Model):
     id = models.AutoField(primary_key=True)
@@ -25,10 +22,12 @@ class Subscription(models.Model):
         return alerts_list
 
     def save(self, *args, force_insert=False, force_update=False, **kwargs):
-        from subscription_manager_dir import subscription_alert_mapping
+        from subscription_manager_dir.tasks import subscription_mapper
+        # from subscription_manager_dir import subscription_alert_mapping
         super().save(force_insert, force_update, *args, **kwargs)
         self.alert_set.clear()
-        subscription_alert_mapping.map_subscription_to_alert(self)
+        # subscription_alert_mapping.map_subscription_to_alert(self)
+        subscription_mapper.apply_async(args=[self.id], queue='subscription_manager')
 
     def delete(self, *args, force_insert=False, force_update=False):
         super().delete(force_insert, force_update)

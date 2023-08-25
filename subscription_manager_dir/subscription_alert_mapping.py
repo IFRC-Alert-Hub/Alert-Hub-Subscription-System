@@ -1,10 +1,8 @@
 import json
 
 from django.db import transaction
-
-from .cache import DynamicCache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
-from .models import Subscription, SubscriptionAlerts, Alert
+from .models import Subscription, Alert
 from .tasks import process_immediate_alerts
 
 

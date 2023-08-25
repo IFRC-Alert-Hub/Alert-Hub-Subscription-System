@@ -10,6 +10,7 @@ from celery import shared_task
 from project import settings
 
 
+
 @shared_task(bind=True)
 def send_subscription_email(self, user_id, subject, template_name, context=None):
     custom_user = get_user_model()
@@ -135,3 +136,15 @@ def get_removed_alert(alert_id):
 def initialise_task():
     from .subscription_alert_mapping import map_subscriptions_to_alert
     map_subscriptions_to_alert()
+
+
+@shared_task
+def subscription_mapper(subscription_id):
+    from subscription_dir.models import Subscription
+    from subscription_manager_dir.subscription_alert_mapping import map_subscription_to_alert
+
+    try:
+        subscription = Subscription.objects.get(id=subscription_id)
+        map_subscription_to_alert(subscription)
+    except Subscription.DoesNotExist:
+        print(f"Subscription {subscription_id} not exist")
