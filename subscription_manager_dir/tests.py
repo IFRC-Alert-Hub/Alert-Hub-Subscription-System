@@ -4,7 +4,7 @@ from django.utils import timezone
 from .models import Subscription, Alert
 from .external_alert_models import CapFeedAdmin1, CapFeedCountry, CapFeedAlert, CapFeedAlertinfo
 from .subscription_alert_mapping import map_alert_to_subscription, \
-    delete_alert_to_subscription, map_subscriptions_to_alert
+    delete_alert_to_subscription, map_subscriptions_to_alert, map_subscription_to_alert
 
 
 # Since Subscription System can only have read-access to Alert DB, the tables in external models
@@ -114,6 +114,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -131,6 +132,8 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
+
         expected = [4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -150,6 +153,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -169,6 +173,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -189,6 +194,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -203,6 +209,7 @@ class SubscriptionManagerTestCase(TestCase):
 
         subscription.save()
 
+        map_subscription_to_alert(subscription)
         expected = [4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -224,6 +231,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -232,6 +240,7 @@ class SubscriptionManagerTestCase(TestCase):
         admin1_ids = [3, 4]
         subscription.admin1_ids = admin1_ids
         subscription.save()
+        map_subscription_to_alert(subscription)
 
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
@@ -253,6 +262,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -281,6 +291,8 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
+
         expected = [4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -307,15 +319,16 @@ class SubscriptionManagerTestCase(TestCase):
         urgency_list = ["Expected", "Future"]
         severity_list = ["Minor", "Moderate"]
         certainty_list = ["Likely", "Observed"]
-        Subscription.objects.create(subscription_name="Common Subscription",
-                                    user_id=1,
-                                    country_ids=[2],
-                                    admin1_ids=[1, 2],
-                                    urgency_array=urgency_list,
-                                    severity_array=severity_list,
-                                    certainty_array=certainty_list,
-                                    subscribe_by=[1],
-                                    sent_flag=0)
+        subscription = Subscription.objects.create(subscription_name="Common Subscription",
+                                                    user_id=1,
+                                                    country_ids=[2],
+                                                    admin1_ids=[1, 2],
+                                                    urgency_array=urgency_list,
+                                                    severity_array=severity_list,
+                                                    certainty_array=certainty_list,
+                                                    subscribe_by=[1],
+                                                    sent_flag=0)
+        map_subscription_to_alert(subscription)
         # Try to map alert with id 2 to the new subscription, though it is already mapped to the
         # above susbcription
         result = map_alert_to_subscription(1)
@@ -400,6 +413,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                           certainty_array=certainty_list,
                                                           subscribe_by=[1],
                                                           sent_flag=0)
+        map_subscription_to_alert(common_subscription)
 
         # simulate the incoming alert
         teyvat_1 = CapFeedCountry.objects.get(id=1)
@@ -441,6 +455,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                           certainty_array=certainty_list,
                                                           subscribe_by=[1],
                                                           sent_flag=0)
+        map_subscription_to_alert(common_subscription)
         # simulate the incoming alert
         teyvat_1 = CapFeedCountry.objects.get(id=1)
         admin1_1 = CapFeedAdmin1.objects.get(id=1)
