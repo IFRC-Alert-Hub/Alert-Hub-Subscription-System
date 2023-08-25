@@ -56,8 +56,8 @@ def process_immediate_alerts(subscription_id):
     alert_info = []
     for related_alert in related_alerts:
         alert = related_alert.alert
-        alert_details = json.loads(alert.serialised_string)
-        alert_info.append(alert_details)
+        #alert_details = json.loads(alert.serialised_string)
+        #alert_info.append(alert_details)
 
     viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
 

@@ -115,12 +115,8 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [1, 3]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
-
-        # subscription.delete()
 
     def test_subscription_creation_2(self):
         urgency_list = ["Expected"]
@@ -136,9 +132,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()
@@ -157,9 +151,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [1, 3]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()
@@ -178,9 +170,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [2, 4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()
@@ -200,9 +190,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [2, 4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         # Update urgency, severity, certainty for the subscription
@@ -216,9 +204,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription.save()
 
         expected = [4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()
@@ -239,9 +225,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [1, 3]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         # Update admin1 for the subscription
@@ -250,9 +234,7 @@ class SubscriptionManagerTestCase(TestCase):
         subscription.save()
 
         expected = [2, 4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()
@@ -272,9 +254,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [1, 3]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         # Delete the subscription
@@ -302,9 +282,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    subscribe_by=[1],
                                                    sent_flag=0)
         expected = [4]
-        actual = []
-        for alert in subscription.alert_set.all():
-            actual.append(alert.id)
+        actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
 
         subscription.delete()

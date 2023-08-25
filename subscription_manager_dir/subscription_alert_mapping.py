@@ -71,8 +71,7 @@ def map_alert_to_subscription(alert_id):
 
             if matching_info:
                 if internal_alert is None:
-                    internal_alert = Alert.objects.create(id=alert.id, serialised_string=json.dumps(
-                        alert.to_dict()))
+                    internal_alert = Alert.objects.create(id=alert.id)
 
                 updated_subscriptions.append(subscription)
 
