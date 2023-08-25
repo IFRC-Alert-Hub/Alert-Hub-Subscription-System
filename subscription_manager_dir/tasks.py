@@ -8,7 +8,6 @@ from django.utils.html import strip_tags
 
 from celery import shared_task
 from project import settings
-from .cache import cache_subscriptions_alert
 
 
 @shared_task(bind=True)
@@ -123,4 +122,3 @@ def get_removed_alert(alert_id):
 def initialise_task():
     from .subscription_alert_mapping import map_subscriptions_to_alert
     map_subscriptions_to_alert()
-    cache_subscriptions_alert()

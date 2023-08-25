@@ -16,12 +16,12 @@ class Subscription(models.Model):
     subscribe_by = ArrayField(models.CharField(verbose_name="subscribe_by"), default=list)
     sent_flag = models.IntegerField(default=0, verbose_name="sent_flag")
 
-    def subscription_alerts_to_dict(self):
+    def get_alert_id_list(self):
         alerts_list = []
         alerts = self.alert_set.all()
 
         for alert in alerts:
-            alerts_list.append(json.loads(alert.serialised_string))
+            alerts_list.append(alert.id)
         return alerts_list
 
     def save(self, *args, force_insert=False, force_update=False, **kwargs):
@@ -29,12 +29,6 @@ class Subscription(models.Model):
         super().save(force_insert, force_update, *args, **kwargs)
         self.alert_set.clear()
         subscription_alert_mapping.map_subscription_to_alert(self)
-        #cache.cache_subscription_alert(self)
-        #cache.cache_subscription_admins(self)
 
     def delete(self, *args, force_insert=False, force_update=False):
-        from subscription_manager_dir import cache
-        cache_instance = cache.DynamicCache()
-        cache_instance.delete_subscription_alerts(self.id)
-        #cache.delete_subscription_admins_cache(self)
         super().delete(force_insert, force_update)
