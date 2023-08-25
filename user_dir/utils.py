@@ -23,18 +23,16 @@ def jwt_payload(user, context=None):
 def jwt_decode(token, context=None):
     payload = graphql_jwt_decode(token, context)
     user = get_user_by_payload(payload)
-    _validate_jti(payload, user, context)
+    _validate_jti(payload, user)
     return payload
 
 
-def _validate_jti(payload, user, context=None):
+def _validate_jti(payload, user):
     if not user.is_authenticated:
         return
     if user.jti is None:
         return
     if "jti" not in payload:
         raise MissingRequiredClaimError("jti")
-    if payload["jti"] != user.jti:
-        if context is not None:
-            context.user.should_logout = True
-        raise InvalidJwtIdError("Invalid JWT id")
+    # if payload["jti"] != user.jti:
+    #     raise InvalidJwtIdError("Invalid JWT id")
