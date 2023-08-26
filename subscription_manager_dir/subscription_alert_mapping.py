@@ -1,11 +1,10 @@
 import json
-import time
 
 from django.db import transaction
+from django.core.cache import cache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Subscription, Alert
 from .tasks import process_immediate_alerts
-from django.core.cache import cache
 
 
 def map_subscriptions_to_alert():

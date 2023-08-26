@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 
 from django.apps import AppConfig
 
@@ -20,4 +19,3 @@ class SubscriptionManagerConfig(AppConfig):
             # map_alert_to_subscription
             #map_subscription_to_alert(2)
             #map_alert_to_subscription(13886)
-
