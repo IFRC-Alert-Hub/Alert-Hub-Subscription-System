@@ -17,9 +17,9 @@ def map_subscriptions_to_alert():
 def map_subscription_to_alert(subscription_id):
     with transaction.atomic():
         lock = cache.lock(subscription_id, timeout=15)
-        if lock.acquire(blocking=True):
-            #Lock this subscription until the transaction is finished
-            subscription = Subscription.objects.filter(id=subscription_id).first()
+        lock.acquire(blocking=True)
+        subscription = Subscription.objects.filter(id=subscription_id).first()
+
         #This stores alerts that are already processed.
         potential_alert_ids = []
         #This stores matched alerts.
@@ -44,6 +44,8 @@ def map_subscription_to_alert(subscription_id):
                             internal_alert.save()
                         internal_alert.subscriptions.add(subscription)
                         break
+        #Subscription Locks For Testing
+        #time.sleep(5)
         lock.release()
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id). \
@@ -67,11 +69,6 @@ def map_alert_to_subscription(alert_id):
     with transaction.atomic():
         for subscription in subscriptions:
             matching_info = None
-            lock = cache.lock(subscription.id, timeout=10)
-            #Wait until the subscription to alerts mapping task done.
-            if lock.acquire(blocking=True):
-                print("Waiting for: " + str(subscription.id) + " to finish its mappings.")
-                lock.release()
             for info in alert.capfeedalertinfo_set.all():
                 if info.severity in subscription.severity_array and \
                     info.certainty in subscription.certainty_array and \
@@ -109,10 +106,6 @@ def delete_alert_to_subscription(alert_id):
     updated_subscription_ids = []
     with transaction.atomic():
         for subscription in subscriptions:
-            lock = cache.lock(subscription.id, timeout=10)
-            # Wait until the creation task done.
-            if lock.acquire(blocking=True):
-                lock.release()
             subscription.alert_set.remove(alert_to_be_deleted)
             updated_subscription_ids.append(subscription.id)
 
