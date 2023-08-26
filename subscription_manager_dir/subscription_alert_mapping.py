@@ -1,4 +1,5 @@
 import json
+import time
 
 from django.db import transaction
 from django.core.cache import cache
@@ -15,7 +16,7 @@ def map_subscriptions_to_alert():
 
 def map_subscription_to_alert(subscription_id):
     with transaction.atomic():
-        lock = cache.lock(subscription_id, timeout=15)
+        lock = cache.lock(subscription_id, timeout=None)
         lock.acquire(blocking=True)
         subscription = Subscription.objects.filter(id=subscription_id).first()
 
@@ -29,9 +30,15 @@ def map_subscription_to_alert(subscription_id):
             potential_alert_set = admin1.capfeedalert_set.all()
 
             for alert in potential_alert_set:
-                if alert.id in potential_alert_ids:
+                alert_id = alert.id
+                if alert_id in potential_alert_ids:
                     continue
-                potential_alert_ids.append(alert.id)
+                potential_alert_ids.append(alert_id)
+
+                # Lock the alert to not be deleted during matching
+                alert_lock = cache.lock("a" + str(alert_id), timeout=None)
+                alert_lock.acquire(blocking=True)
+
                 for info in alert.capfeedalertinfo_set.all():
                     if info.severity in subscription.severity_array and \
                             info.certainty in subscription.certainty_array and \
@@ -43,6 +50,7 @@ def map_subscription_to_alert(subscription_id):
                             internal_alert.save()
                         internal_alert.subscriptions.add(subscription)
                         break
+                alert_lock.release()
         #Subscription Locks For Testing
         #time.sleep(5)
         lock.release()
@@ -101,6 +109,9 @@ def delete_alert_to_subscription(alert_id):
     if alert_to_be_deleted is None:
         return f"Alert with id {alert_id} is not found in subscription database."
 
+    alert_lock = cache.lock("a" + str(alert_id), timeout=None)
+    alert_lock.acquire(blocking=True)
+
     subscriptions = alert_to_be_deleted.subscriptions.all()
     updated_subscription_ids = []
     with transaction.atomic():
@@ -109,7 +120,7 @@ def delete_alert_to_subscription(alert_id):
             updated_subscription_ids.append(subscription.id)
 
         alert_to_be_deleted.delete()
-
+    alert_lock.release()
     if len(updated_subscription_ids) != 0:
         return f"Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \
