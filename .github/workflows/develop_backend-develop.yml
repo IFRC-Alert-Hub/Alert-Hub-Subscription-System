@@ -7,7 +7,7 @@ name: Build and deploy Python app to Azure Web App - backend-develop
 on:
   push:
     branches:
-      - dev_yx
+      - without_cache
   workflow_dispatch:
 
 jobs:

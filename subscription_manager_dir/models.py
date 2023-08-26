@@ -6,7 +6,6 @@ from subscription_dir.models import Subscription
 class Alert(models.Model):
     id = models.IntegerField(primary_key=True)
     subscriptions = models.ManyToManyField(Subscription, through="SubscriptionAlerts")
-    serialised_string = models.CharField(max_length=1000)
 
 
 class SubscriptionAlerts(models.Model):

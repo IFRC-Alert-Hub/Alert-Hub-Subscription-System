@@ -37,10 +37,10 @@ class CapFeedAlert(models.Model):
         alert_dict["event"] = first_info.event
         alert_dict["category"] = first_info.category
         alert_dict["country_name"] = self.country.name
-        admin1_names = []
+        admin1_names = set()
         for admin1 in self.admin1s.all():
-            admin1_names.append(admin1.name)
-        alert_dict["admin1s"] = admin1_names
+            admin1_names.add(admin1.name)
+        alert_dict["admin1s"] = list(admin1_names)
         alert_dict["sent"] = str(self.sent)
 
         return alert_dict

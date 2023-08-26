@@ -1,5 +1,4 @@
 # pylint: disable=R0801
-import json
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -8,7 +7,7 @@ from django.utils.html import strip_tags
 
 from celery import shared_task
 from project import settings
-from .cache import cache_subscriptions_alert
+
 
 
 @shared_task(bind=True)
@@ -54,25 +53,38 @@ def process_immediate_alerts(subscription_id):
 
     related_alerts_count = related_alerts.count()
 
-    alert_info = []
-    for related_alert in related_alerts:
-        alert = related_alert.alert
-        alert_details = json.loads(alert.serialised_string)
-        alert_info.append(alert_details)
-
     viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
 
     context = {
         'title': subscription_name,
         'count': related_alerts_count,
         'viewer_link': viewer_link,
-        'alerts': alert_info,
     }
 
-    send_subscription_email.delay(user_id, '[IFRC] New alert update from your subscriptions',
+    send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
                                   'subscription_email.html', context)
 
     related_alerts.update(sent=True)
+
+    # alert_info = []
+    # for related_alert in related_alerts:
+    #     alert = related_alert.alert
+    #     #alert_details = json.loads(alert.serialised_string)
+    #     #alert_info.append(alert_details)
+    #
+    # viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
+    #
+    # context = {
+    #     'title': subscription_name,
+    #     'count': related_alerts_count,
+    #     'viewer_link': viewer_link,
+    #     'alerts': alert_info,
+    # }
+    #
+    # send_subscription_email.delay(user_id, '[IFRC] New alert update from your subscriptions',
+    #                               'subscription_email.html', context)
+    #
+    # related_alerts.update(sent=True)
 
 
 @shared_task
@@ -123,4 +135,14 @@ def get_removed_alert(alert_id):
 def initialise_task():
     from .subscription_alert_mapping import map_subscriptions_to_alert
     map_subscriptions_to_alert()
-    cache_subscriptions_alert()
+
+
+@shared_task
+def subscription_mapper(subscription_id):
+    from subscription_dir.models import Subscription
+    from subscription_manager_dir.subscription_alert_mapping import map_subscription_to_alert
+
+    try:
+        map_subscription_to_alert(subscription_id)
+    except Subscription.DoesNotExist:
+        print(f"Subscription {subscription_id} not exist")

@@ -97,11 +97,12 @@ def generate_fake_users_and_subscriptions(count, csv_filename, subscription_coun
                                 name=selected_country_name)
                             admin1s = CapFeedAdmin1.objects.filter(country=selected_country)
                             if admin1s.exists():
-                                admin1_per_subscription = random.randint(1, len(admin1s))
-                                selected_admin1s = random.sample(list(admin1s),
-                                                                 admin1_per_subscription)
+                                # admin1_per_subscription = random.randint(1, len(admin1s))
+                                # selected_admin1s = random.sample(list(admin1s),
+                                #                                  admin1_per_subscription)
                                 country_id = selected_country.id
-                                admin1_ids = [admin1.id for admin1 in selected_admin1s]
+                                # admin1_ids = [admin1.id for admin1 in selected_admin1s]
+                                admin1_ids = [admin1.id for admin1 in admin1s]
                                 subscription = create_subscription(user, [country_id], admin1_ids)
                                 subscriptions_to_create.append(subscription)
 
