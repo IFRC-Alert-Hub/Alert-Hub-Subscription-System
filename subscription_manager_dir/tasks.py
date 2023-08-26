@@ -61,30 +61,10 @@ def process_immediate_alerts(subscription_id):
         'viewer_link': viewer_link,
     }
 
-    send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
-                                  'subscription_email.html', context)
+    # send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
+    #                               'subscription_email.html', context)
 
     related_alerts.update(sent=True)
-
-    # alert_info = []
-    # for related_alert in related_alerts:
-    #     alert = related_alert.alert
-    #     #alert_details = json.loads(alert.serialised_string)
-    #     #alert_info.append(alert_details)
-    #
-    # viewer_link = "https://alert-hub-frontend.azurewebsites.net/account/subscription"
-    #
-    # context = {
-    #     'title': subscription_name,
-    #     'count': related_alerts_count,
-    #     'viewer_link': viewer_link,
-    #     'alerts': alert_info,
-    # }
-    #
-    # send_subscription_email.delay(user_id, '[IFRC] New alert update from your subscriptions',
-    #                               'subscription_email.html', context)
-    #
-    # related_alerts.update(sent=True)
 
 
 @shared_task
@@ -113,8 +93,8 @@ def process_non_immediate_alerts(sent_flag):
             'viewer_link': viewer_link,
         }
 
-        send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
-                                      'subscription_email.html', context)
+        # send_subscription_email.delay(user_id, 'New Alerts Matching Your Subscription',
+        #                               'subscription_email.html', context)
 
         related_alerts.update(sent=True)
 
