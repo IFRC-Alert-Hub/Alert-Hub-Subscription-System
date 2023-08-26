@@ -1,4 +1,4 @@
-
+from django.core.cache import cache
 from django.test import TestCase
 from django.utils import timezone
 from .models import Subscription, Alert
@@ -91,6 +91,8 @@ class SubscriptionManagerTestCase(TestCase):
                                                        certainty="Possible",
                                                        alert=alert_4)
         alert_info_6.save()
+
+        cache.clear()
 
         super(SubscriptionManagerTestCase, cls).setUpClass()
 
