@@ -17,7 +17,7 @@ class SubscriptionManagerConfig(AppConfig):
             #Used for testing locks
             #from .subscription_alert_mapping import map_subscription_to_alert, \
             #    map_alert_to_subscription, delete_alert_to_subscription
-            #from django.core.cache import cache
-            #cache.clear()
+            from django.core.cache import cache
+            cache.clear()
             #map_subscription_to_alert(3)
             #delete_alert_to_subscription(3408)
