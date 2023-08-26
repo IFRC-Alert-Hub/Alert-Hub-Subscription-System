@@ -1,43 +1,50 @@
 import json
+import time
 
 from django.db import transaction
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
 from .models import Subscription, Alert
 from .tasks import process_immediate_alerts
+from django.core.cache import cache
 
 
 def map_subscriptions_to_alert():
     subscriptions = Subscription.objects.all()
     for subscription in subscriptions:
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
 
 
-def map_subscription_to_alert(subscription):
-    #This stores alerts that are already processed.
-    potential_alert_ids = []
-    #This stores matched alerts.
-    for admin1_id in subscription.admin1_ids:
-        admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
-        if admin1 is None:
-            continue
-        potential_alert_set = admin1.capfeedalert_set.all()
-
-        for alert in potential_alert_set:
-            if alert.id in potential_alert_ids:
+def map_subscription_to_alert(subscription_id):
+    with transaction.atomic():
+        lock = cache.lock(subscription_id, timeout=15)
+        if lock.acquire(blocking=True):
+            #Lock this subscription until the transaction is finished
+            subscription = Subscription.objects.filter(id=subscription_id).first()
+        #This stores alerts that are already processed.
+        potential_alert_ids = []
+        #This stores matched alerts.
+        for admin1_id in subscription.admin1_ids:
+            admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
+            if admin1 is None:
                 continue
-            potential_alert_ids.append(alert.id)
-            for info in alert.capfeedalertinfo_set.all():
-                if info.severity in subscription.severity_array and \
-                        info.certainty in subscription.certainty_array and \
-                        info.urgency in subscription.urgency_array:
+            potential_alert_set = admin1.capfeedalert_set.all()
 
-                    internal_alert = Alert.objects.filter(id=alert.id).first()
-                    if internal_alert is None:
-                        internal_alert = Alert.objects.create(id=alert.id)
-                        internal_alert.save()
-                    internal_alert.subscriptions.add(subscription)
-                    break
+            for alert in potential_alert_set:
+                if alert.id in potential_alert_ids:
+                    continue
+                potential_alert_ids.append(alert.id)
+                for info in alert.capfeedalertinfo_set.all():
+                    if info.severity in subscription.severity_array and \
+                            info.certainty in subscription.certainty_array and \
+                            info.urgency in subscription.urgency_array:
 
+                        internal_alert = Alert.objects.filter(id=alert.id).first()
+                        if internal_alert is None:
+                            internal_alert = Alert.objects.create(id=alert.id)
+                            internal_alert.save()
+                        internal_alert.subscriptions.add(subscription)
+                        break
+        lock.release()
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id). \
         prefetch_related('admin1s', 'capfeedalertinfo_set').first()
@@ -50,20 +57,25 @@ def map_alert_to_subscription(alert_id):
     if converted_alert is not None:
         return f"Alert with id {alert_id} is already converted and matched subscription"
 
-    alert_admin1_ids = [admin1.id for admin1 in alert.admin1s.all()]
-    subscriptions = Subscription.objects.filter(admin1_ids__overlap=alert_admin1_ids)
-
     internal_alert = None
     updated_subscriptions = []
+
+    alert_admin1_ids = [admin1.id for admin1 in alert.admin1s.all()]
+    subscriptions = Subscription.objects.filter(
+        admin1_ids__overlap=alert_admin1_ids)
 
     with transaction.atomic():
         for subscription in subscriptions:
             matching_info = None
-
+            lock = cache.lock(subscription.id, timeout=10)
+            #Wait until the subscription to alerts mapping task done.
+            if lock.acquire(blocking=True):
+                print("Waiting for: " + str(subscription.id) + " to finish its mappings.")
+                lock.release()
             for info in alert.capfeedalertinfo_set.all():
                 if info.severity in subscription.severity_array and \
-                        info.certainty in subscription.certainty_array and \
-                        info.urgency in subscription.urgency_array:
+                    info.certainty in subscription.certainty_array and \
+                    info.urgency in subscription.urgency_array:
                     matching_info = info
                     break
 
@@ -95,11 +107,16 @@ def delete_alert_to_subscription(alert_id):
 
     subscriptions = alert_to_be_deleted.subscriptions.all()
     updated_subscription_ids = []
-    for subscription in subscriptions:
-        subscription.alert_set.remove(alert_to_be_deleted)
-        updated_subscription_ids.append(subscription.id)
+    with transaction.atomic():
+        for subscription in subscriptions:
+            lock = cache.lock(subscription.id, timeout=10)
+            # Wait until the creation task done.
+            if lock.acquire(blocking=True):
+                lock.release()
+            subscription.alert_set.remove(alert_to_be_deleted)
+            updated_subscription_ids.append(subscription.id)
 
-    alert_to_be_deleted.delete()
+        alert_to_be_deleted.delete()
 
     if len(updated_subscription_ids) != 0:
         return f"Alert {alert_id} is successfully deleted from subscription database. " \

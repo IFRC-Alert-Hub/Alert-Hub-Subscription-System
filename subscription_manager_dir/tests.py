@@ -114,7 +114,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -132,7 +132,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
 
         expected = [4]
         actual = subscription.get_alert_id_list()
@@ -153,7 +153,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -173,7 +173,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -194,7 +194,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -209,7 +209,7 @@ class SubscriptionManagerTestCase(TestCase):
 
         subscription.save()
 
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [4]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -231,7 +231,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -240,7 +240,7 @@ class SubscriptionManagerTestCase(TestCase):
         admin1_ids = [3, 4]
         subscription.admin1_ids = admin1_ids
         subscription.save()
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
 
         expected = [2, 4]
         actual = subscription.get_alert_id_list()
@@ -262,7 +262,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         expected = [1, 3]
         actual = subscription.get_alert_id_list()
         self.assertListEqual(expected, actual)
@@ -291,7 +291,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                    certainty_array=certainty_list,
                                                    subscribe_by=[1],
                                                    sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
 
         expected = [4]
         actual = subscription.get_alert_id_list()
@@ -328,7 +328,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                     certainty_array=certainty_list,
                                                     subscribe_by=[1],
                                                     sent_flag=0)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription.id)
         # Try to map alert with id 2 to the new subscription, though it is already mapped to the
         # above susbcription
         result = map_alert_to_subscription(1)
@@ -413,7 +413,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                           certainty_array=certainty_list,
                                                           subscribe_by=[1],
                                                           sent_flag=0)
-        map_subscription_to_alert(common_subscription)
+        map_subscription_to_alert(common_subscription.id)
 
         # simulate the incoming alert
         teyvat_1 = CapFeedCountry.objects.get(id=1)
@@ -455,7 +455,7 @@ class SubscriptionManagerTestCase(TestCase):
                                                           certainty_array=certainty_list,
                                                           subscribe_by=[1],
                                                           sent_flag=0)
-        map_subscription_to_alert(common_subscription)
+        map_subscription_to_alert(common_subscription.id)
         # simulate the incoming alert
         teyvat_1 = CapFeedCountry.objects.get(id=1)
         admin1_1 = CapFeedAdmin1.objects.get(id=1)

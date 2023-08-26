@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from django.apps import AppConfig
 
@@ -13,11 +14,10 @@ class SubscriptionManagerConfig(AppConfig):
             not in sys.argv) \
                 or \
                 ('WEBSITE_HOSTNAME' not in os.environ and 'runserver' in sys.argv):
-            from django.core.cache import cache
-            result = cache.add('locked', True, timeout=60)
-            if result:
-                pass
-                # from .subscription_alert_mapping import map_alerts_to_subscription
-                # from .cache import cache_subscriptions_alert
-                # map_alerts_to_subscription()
-                # cache_subscriptions_alert()
+            pass
+            #Used for testing locks
+            #from .subscription_alert_mapping import map_subscription_to_alert,
+            # map_alert_to_subscription
+            #map_subscription_to_alert(2)
+            #map_alert_to_subscription(13886)
+

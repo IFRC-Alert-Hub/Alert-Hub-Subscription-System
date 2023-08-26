@@ -144,7 +144,6 @@ def subscription_mapper(subscription_id):
     from subscription_manager_dir.subscription_alert_mapping import map_subscription_to_alert
 
     try:
-        subscription = Subscription.objects.get(id=subscription_id)
-        map_subscription_to_alert(subscription)
+        map_subscription_to_alert(subscription_id)
     except Subscription.DoesNotExist:
         print(f"Subscription {subscription_id} not exist")
