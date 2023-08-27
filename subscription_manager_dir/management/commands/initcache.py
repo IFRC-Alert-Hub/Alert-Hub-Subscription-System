@@ -7,6 +7,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         import time
+        all_keys = cache.keys("*")
+        print(f"previous keys: {all_keys}")
         cache.clear()
         print("Clear Cache")
 
