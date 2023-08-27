@@ -1,5 +1,4 @@
 import json
-import time
 from django.db import transaction
 from django.core.cache import cache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
@@ -12,14 +11,16 @@ def map_subscriptions_to_alert():
     for subscription in subscriptions:
         map_subscription_to_alert(subscription.id)
 
-
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
 def map_subscription_to_alert(subscription_id):
     updated_alerts = []
     #Only if the subscription finished its last mapping, we start to map the new one.
     update_subscription_locked = cache.lock(subscription_id,timeout=None)
     try:
         update_subscription_locked.acquire(blocking=True)
-        # Make sure that in the process of second update, the user still cannot view subscription alerts.
+        # Make sure that in the process of second update,
+        # the user still cannot view subscription alerts.
         cache.set("v"+str(subscription_id), True, timeout=None)
         subscription = Subscription.objects.filter(id=subscription_id).first()
 
@@ -69,20 +70,20 @@ def map_subscription_to_alert(subscription_id):
 
         subscription.alert_set.add(*updated_alerts)
         # print([alert.id for alert in subscription.alert_set.all()])
-
-
         # Subscription Locks For Testing
         #time.sleep(20)
 
-    except Exception as e:
-        print(f"Creation Exception: {e}")
-        pass
+    except Exception as exception:
+        print(f"Creation Exception: {exception}")
+
     finally:
         lock = cache.get("v"+str(subscription_id))
         if lock is not None and lock is True:
             cache.delete("v"+str(subscription_id))
 
         update_subscription_locked.release()
+
+    return "Mapping Finished!"
 
 
 def map_alert_to_subscription(alert_id):
@@ -148,9 +149,9 @@ def delete_alert_to_subscription(alert_id):
         with transaction.atomic():
             alert_to_be_deleted.subscriptions.clear()
 
-    except Exception as e:
-        print(f"Delete Exception: {e}")
-        pass
+    except Exception as exception:
+        print(f"Delete Exception: {exception}")
+
     finally:
         alert_lock.release()
 
