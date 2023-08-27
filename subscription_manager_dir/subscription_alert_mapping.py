@@ -17,9 +17,10 @@ def map_subscription_to_alert(subscription_id):
     updated_alerts = []
     try:
         subscription = Subscription.objects.filter(id=subscription_id).first()
+
         if subscription is None:
             return None
-
+        subscription.alert_set.clear()
         # This stores alerts that are already processed.
         potential_alert_ids = []
         # This stores matched alerts.
