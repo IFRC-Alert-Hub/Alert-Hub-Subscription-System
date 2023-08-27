@@ -14,10 +14,8 @@ def map_subscriptions_to_alert():
 
 
 def map_subscription_to_alert(subscription_id):
-    lock = cache.lock(subscription_id, timeout=None)
     updated_alerts = []
     try:
-        lock.acquire(blocking=True)
         subscription = Subscription.objects.filter(id=subscription_id).first()
         if subscription is None:
             return None
@@ -68,14 +66,16 @@ def map_subscription_to_alert(subscription_id):
 
 
         # Subscription Locks For Testing
-        #time.sleep(20)
+        time.sleep(20)
 
     except Exception as e:
         print(f"Creation Exception: {e}")
         pass
     finally:
-        if lock.locked():
-            lock.release()
+        lock = cache.get(subscription_id)
+        if lock is not None and lock is True:
+            print(True)
+            cache.delete(subscription_id)
 
 
 def map_alert_to_subscription(alert_id):

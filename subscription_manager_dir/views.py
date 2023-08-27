@@ -6,10 +6,10 @@ from subscription_dir.models import Subscription
 from .subscription_alert_mapping import get_subscription_alerts_without_mapping_records
 def get_subscirption_alerts(request, subscription_id):
     try:
-        # Try to acquire the lock without waiting. If there is a lock, it means susbcription is
+        # Try to acquire the lock without waiting. If there is a lock, it means subscription is
         # still mapping the alerts.
-        lock_acquired = cache.lock(subscription_id)
-        if lock_acquired.locked():
+        lock_acquired = cache.get(subscription_id)
+        if lock_acquired is not None and lock_acquired is True:
             return HttpResponse("Subscription is still matching alerts!", status=202)
 
         subscription = Subscription.objects.get(id=subscription_id)
