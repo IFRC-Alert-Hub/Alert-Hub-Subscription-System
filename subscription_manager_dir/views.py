@@ -8,7 +8,7 @@ def get_subscirption_alerts(request, subscription_id):
     try:
         # Try to acquire the lock without waiting. If there is a lock, it means subscription is
         # still mapping the alerts.
-        lock_acquired = cache.get(subscription_id)
+        lock_acquired = cache.get("v" + str(subscription_id))
         if lock_acquired is not None and lock_acquired is True:
             return HttpResponse("Subscription is still matching alerts!", status=202)
 
