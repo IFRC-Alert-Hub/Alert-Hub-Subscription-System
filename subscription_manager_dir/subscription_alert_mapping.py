@@ -1,5 +1,4 @@
 import json
-
 from django.db import transaction
 from django.core.cache import cache
 from .external_alert_models import CapFeedAlert, CapFeedAdmin1
@@ -12,16 +11,25 @@ def map_subscriptions_to_alert():
     for subscription in subscriptions:
         map_subscription_to_alert(subscription.id)
 
-
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-branches
 def map_subscription_to_alert(subscription_id):
-    with transaction.atomic():
-        lock = cache.lock(subscription_id, timeout=None)
-        lock.acquire(blocking=True)
+    updated_alerts = []
+    #Only if the subscription finished its last mapping, we start to map the new one.
+    update_subscription_locked = cache.lock(subscription_id,timeout=None)
+    try:
+        update_subscription_locked.acquire(blocking=True)
+        # Make sure that in the process of second update,
+        # the user still cannot view subscription alerts.
+        cache.set("v"+str(subscription_id), True, timeout=None)
         subscription = Subscription.objects.filter(id=subscription_id).first()
 
-        #This stores alerts that are already processed.
+        if subscription is None:
+            return None
+        subscription.alert_set.clear()
+        # This stores alerts that are already processed.
         potential_alert_ids = []
-        #This stores matched alerts.
+        # This stores matched alerts.
         for admin1_id in subscription.admin1_ids:
             admin1 = CapFeedAdmin1.objects.filter(id=admin1_id).first()
             if admin1 is None:
@@ -33,26 +41,51 @@ def map_subscription_to_alert(subscription_id):
                 if alert_id in potential_alert_ids:
                     continue
                 potential_alert_ids.append(alert_id)
-
                 # Lock the alert to not be deleted during matching
-                alert_lock = cache.lock("a" + str(alert_id), timeout=None)
-                alert_lock.acquire(blocking=True)
+                deleted_alert_lock = cache.lock("a" + str(alert_id), timeout=None)
+                # If this lock is already locked, meaning it is being deleted, we just skip
+                # processing it.
+                if deleted_alert_lock.locked():
+                    continue
+                try:
+                    # If the alert is not to be deleted, lock it so the potential deletion of this
+                    # alert can be delayed.
+                    deleted_alert_lock.acquire(blocking=True)
+                    for info in alert.capfeedalertinfo_set.all():
+                        if info.severity in subscription.severity_array and \
+                                info.certainty in subscription.certainty_array and \
+                                info.urgency in subscription.urgency_array:
 
-                for info in alert.capfeedalertinfo_set.all():
-                    if info.severity in subscription.severity_array and \
-                            info.certainty in subscription.certainty_array and \
-                            info.urgency in subscription.urgency_array:
+                            internal_alert = Alert.objects.filter(id=alert.id).first()
+                            if internal_alert is None:
+                                internal_alert = Alert.objects.create(id=alert.id)
+                                internal_alert.save()
 
-                        internal_alert = Alert.objects.filter(id=alert.id).first()
-                        if internal_alert is None:
-                            internal_alert = Alert.objects.create(id=alert.id)
-                            internal_alert.save()
-                        internal_alert.subscriptions.add(subscription)
-                        break
-                alert_lock.release()
-        #Subscription Locks For Testing
-        #time.sleep(5)
-        lock.release()
+                            updated_alerts.append(internal_alert)
+                            break
+                except Exception:
+                    pass
+                finally:
+                    deleted_alert_lock.release()
+
+        subscription.alert_set.add(*updated_alerts)
+        # print([alert.id for alert in subscription.alert_set.all()])
+        # Subscription Locks For Testing
+        #time.sleep(20)
+
+    except Exception as exception:
+        print(f"Creation Exception: {exception}")
+
+    finally:
+        lock = cache.get("v"+str(subscription_id))
+        if lock is not None and lock is True:
+            cache.delete("v"+str(subscription_id))
+
+        update_subscription_locked.release()
+
+    return "Mapping Finished!"
+
+
 def map_alert_to_subscription(alert_id):
     alert = CapFeedAlert.objects.filter(id=alert_id). \
         prefetch_related('admin1s', 'capfeedalertinfo_set').first()
@@ -77,8 +110,8 @@ def map_alert_to_subscription(alert_id):
             matching_info = None
             for info in alert.capfeedalertinfo_set.all():
                 if info.severity in subscription.severity_array and \
-                    info.certainty in subscription.certainty_array and \
-                    info.urgency in subscription.urgency_array:
+                        info.certainty in subscription.certainty_array and \
+                        info.urgency in subscription.urgency_array:
                     matching_info = info
                     break
 
@@ -107,25 +140,28 @@ def delete_alert_to_subscription(alert_id):
     alert_to_be_deleted = Alert.objects.filter(id=alert_id).first()
     if alert_to_be_deleted is None:
         return f"Alert with id {alert_id} is not found in subscription database."
-
     alert_lock = cache.lock("a" + str(alert_id), timeout=None)
-    alert_lock.acquire(blocking=True)
-
-    subscriptions = alert_to_be_deleted.subscriptions.all()
     updated_subscription_ids = []
-    with transaction.atomic():
-        for subscription in subscriptions:
-            subscription.alert_set.remove(alert_to_be_deleted)
-            updated_subscription_ids.append(subscription.id)
+    try:
+        alert_lock.acquire(blocking=True)
+        subscriptions = alert_to_be_deleted.subscriptions.all()
+        updated_subscription_ids = [subscription.id for subscription in subscriptions]
+        with transaction.atomic():
+            alert_to_be_deleted.subscriptions.clear()
 
-        alert_to_be_deleted.delete()
-    alert_lock.release()
+    except Exception as exception:
+        print(f"Delete Exception: {exception}")
+
+    finally:
+        alert_lock.release()
+
     if len(updated_subscription_ids) != 0:
         return f"Alert {alert_id} is successfully deleted from subscription database. " \
                f"Updated Subscription id are " \
                f"{updated_subscription_ids}."
 
     return f"Alert {alert_id} is successfully deleted from subscription database. "
+
 
 def get_subscription_alerts_without_mapping_records(subscription_id):
     subscription = Subscription.objects.filter(id=subscription_id).first()

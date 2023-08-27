@@ -24,10 +24,11 @@ class Subscription(models.Model):
 
     def save(self, *args, force_insert=False, force_update=False, **kwargs):
         from subscription_manager_dir.tasks import subscription_mapper
-        # from subscription_manager_dir import subscription_alert_mapping
+        from django.core.cache import cache
         super().save(force_insert, force_update, *args, **kwargs)
-        self.alert_set.clear()
-        # subscription_alert_mapping.map_subscription_to_alert(self)
+        #Add the subscription id as a view lock, so user will not view the subscription during
+        # mappings.
+        cache.add("v"+str(self.id), True, timeout=None)
         subscription_mapper.apply_async(args=[self.id], queue='subscription_manager')
 
     def delete(self, *args, force_insert=False, force_update=False):
