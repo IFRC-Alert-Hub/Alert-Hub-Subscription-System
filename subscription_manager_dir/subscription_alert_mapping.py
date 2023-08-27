@@ -66,7 +66,7 @@ def map_subscription_to_alert(subscription_id):
 
 
         # Subscription Locks For Testing
-        time.sleep(20)
+        #time.sleep(20)
 
     except Exception as e:
         print(f"Creation Exception: {e}")
