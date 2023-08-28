@@ -79,6 +79,52 @@ celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
 
+## Docker Deployment
+
+### Prerequisites
+
+Ensure you have the following installed on your machine:
+
+- Docker: This is required to create and manage your application's containers. If Docker is not
+  already installed, follow the guide here to install Docker.
+- Docker Compose: This is required to manage your application's services. It's usually included
+  with Docker. If not, follow the guide here to install Docker Compose.
+
+### Building the Docker Image and Running the Containers
+
+1. Clone the repository to your local machine:
+
+```bash
+git clone https://github.com/IFRC-Alert-Hub/Alert-Hub-Backend.git
+```
+
+2. Navigate into the project directory:
+
+```bash
+cd Alert-Hub-Backend
+```
+
+3. Build and run the Docker containers:
+
+```bash
+docker-compose up --build
+```
+
+This command builds the Docker images if they don't exist and starts the containers. If the images
+already exist, it just starts the containers.
+
+To ensure that the Docker containers are running, you can run docker ps which lists all running
+Docker containers.
+
+### Stopping the Docker Containers
+To stop the Docker containers, run the following command:
+```bash
+docker-compose down
+```
+
+You can either use [Docker Desktop](https://www.docker.com/products/docker-desktop/) to manage 
+your containers.
+
 ## Datasources
 Our datasources of boundaries of administrative areas come from [GADM data](https://gadm.org/data.html).
 
