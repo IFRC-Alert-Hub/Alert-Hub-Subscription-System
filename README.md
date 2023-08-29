@@ -2,12 +2,13 @@
 
 ## Description
 
-This project serves as a back-end application of IFRC Alert Hub designed to work with [IFRC/UCL
-Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator).
+This project serves as a back-end application of IFRC Alert Hub designed to work with 
+[IFRC/Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator).
 This application relies on it to get real-time updates about alerts.
 
 Additionally, this back-end project is designed to work with a corresponding front-end application.
-You can find the front-end code at [https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend].
+You can find the front-end code at 
+[IFRC/Alert Hub Frontend](https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend).
 
 The goal of the IFRC Alert Hub is to ensure that communities around the world receive the most
 timely and effective emergency alerts possible, so that action can be taken to protect their lives
@@ -15,10 +16,13 @@ and livelihoods.
 
 ## Features
 
-- A global alert map: Offers a geospatial overview of worldwide emergencies.
-- User subscription system: Allows personalized accounts and subscriptions to regions or disaster
-  severities of interest.
+- A global alert map visualization: Offers a geospatial overview of worldwide emergencies.
+- User subscription: Allows personalized accounts and subscriptions to sub-national regions 
+  or disaster severities of interest.
+- Alert notifications or rebroadcasting: Send or rebroadcast real-time alerts to users.
 - Email notifications: Sends real-time updates on emergencies to users based on their subscription.
+- Administration service: Fulfills a wide-range of complex use cases involving administrators 
+  and staff users.
 
 ## Installation and Usage
 
@@ -34,18 +38,25 @@ Before you start, make sure you have:
 - RabbitMQ: This project uses RabbitMQ for its message broker. You can download it
   from [here](https://www.rabbitmq.com/download.html) and find the installation
   guide [here](https://www.rabbitmq.com/install-guide.html).
-- CAP Aggregator: This project also relies on
-  the [IFRC/UCL Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator).
+- CAP Aggregator: This project also relies on the 
+  [IFRC/UCL Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator).
   Make sure the CAP Aggregator is correctly installed and running.
 - Redis (Recommend 7.0.12 or higher): This project uses Redis to store tasks for Celery tasks. 
-  You can find the installation guide from [here](https://redis.io/docs/getting-started/installation/).
+  You can find the installation guide 
+  from [here](https://redis.io/docs/getting-started/installation/).
 
 ### Run the Application
 
-1. Clone the repository to your local machine:
+1. Clone the repository to your local machine, using HTTPS:
 
 ```bash
-https://github.com/IFRC-Alert-Hub/Alert-Hub-Backend.git
+https://github.com/IFRC-Alert-Hub/Alert-Hub-Subscription-System.git
+```
+
+or SSH:
+
+```bash
+git@github.com:IFRC-Alert-Hub/Alert-Hub-Subscription-System.git
 ```
 
 2. Navigate into the project directory:
@@ -81,16 +92,19 @@ TEST_MODE=True
 ```
 
 6. Start the redis server:
+
 ```bash
 redis-server
 ```
 
 7. Start the server:
+
 ```bash
 python manage.py runserver
 ```
 
 8. Start celery worker and scheduler:
+
 ```bash
 celery -A project worker -l info --pool=solo
 celery -A project beat -l info
@@ -98,22 +112,25 @@ celery -A project beat -l info
 
 ## Access the admin page
 
-Django provides us Admin Panel for it’s users. 
+Django provides us Admin Panel for its users. 
 So we need not worry about creating a separate Admin page or providing authentication feature 
 as Django provides us that feature. 
-Before using this feature, you must have migrated your project, otherwise the superuser database will not be created.
+Before using this feature, you must have migrated your project, otherwise the superuser database 
+will not be created.
 
-1. You should create superuser, first reach the same directory as that of manage.py and run the following command:
+1. You should create superuser, first reach the same directory as that of manage.py and run 
+the following command:
+
 ```bash
 python manage.py createsuperuser
 ```
 
 2. You can access the admin page 
-   from [here] (http://127.0.0.1:8000/admin/login/?next=/admin/)
+   from [here](http://127.0.0.1:8000/admin/login/?next=/admin/).
 
 ## Access the GraphQL page
 
-In this project, we use GraphQL to access the interfaces provided from the backend.
+In this project, we use GraphQL to access the interfaces provided from the back-end.
 You can access the GraphQL page by getting urls from urls.py
 
 ```
@@ -169,11 +186,15 @@ python manage.py dbrestore
 
 More description can be referred from [dbbackup description](documents/dbbackup.md).
 
-You can integrate this backup service with Linux crontab service, 
-or Cloud service like Azure, AWS.
+You can integrate this backup service with Linux crontab service, or Cloud service like Azure, AWS. 
+Another option is to directly leverage the backup service embedded in these Cloud services.
 
 ## Datasources
-Our datasources of boundaries of administrative areas come from [GADM data](https://gadm.org/data.html).
+
+Our datasources of boundaries of administrative areas come from 
+[GADM data](https://gadm.org/data.html).
 
 ## Design Documentation
-Our design documentations are stored in [Google Drive](https://drive.google.com/drive/folders/1nMoEtwBAnaMjTywjXBGRNS1OZD4mPgUo).
+
+Our design documentations are stored in 
+[Google Drive](https://drive.google.com/drive/folders/1nMoEtwBAnaMjTywjXBGRNS1OZD4mPgUo).
