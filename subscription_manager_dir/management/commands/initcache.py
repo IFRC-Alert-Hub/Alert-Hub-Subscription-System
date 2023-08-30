@@ -3,7 +3,7 @@ from subscription_manager_dir.subscription_alert_mapping import map_subscription
 from django.core.cache import cache
 
 class Command(BaseCommand):
-    help = "Starting inputting alerts from alert database into subscription database"
+    help = "This commands helps to clear cache"
 
     def handle(self, *args, **options):
         import time
