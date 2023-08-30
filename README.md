@@ -172,6 +172,15 @@ where id can be replaced by the specific subscription id.
 
 ## Devops Operations
 
+### Post-Downtime Handling:
+If the subscription server has a long downtime, and there are too many celery task in the Redis queue,
+   use the following commands to re-match all subscriptions with existing alerts:
+
+```bash
+celery -A project purge
+python manage.py initdatabase
+```
+
 ### Health Check Endpoint
 
 To ensure service availability, the following endpoint can be leveraged for health check:
@@ -208,14 +217,6 @@ Another option is to directly leverage the backup service embedded in these Clou
 Our datasources of boundaries of administrative areas come from 
 [GADM data](https://gadm.org/data.html).
 
-## Post-Downtime Handling:
-If the subscription server has a long downtime, and there are too many celery task in the Redis queue,
-   use the following commands to re-match all subscriptions with existing alerts:
-
-```bash
-celery -A project purge
-python manage.py initdatabase
-```
 
 ## Design Documentation
 
