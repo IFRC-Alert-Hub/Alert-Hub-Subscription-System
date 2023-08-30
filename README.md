@@ -5,23 +5,18 @@
 The goal of the IFRC Alert Hub is to ensure that communities around the world receive the most 
 timely and effective emergency alerts possible, so that action can be taken to protect their lives
 and livelihoods. 
-
 The subscription system aims to provide internal logics that enables IFRC volunteers to subscribed to a region, 
 receive timely notifcation of subscribed alerts, and view details of alerts. 
-This Django project is a component of IFRC Alert Hub, and it is designed as a Azure Web App Service to work with 
-[IFRC/Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator). 
+This Django project is a component of IFRC Alert Hub, and it is designed as a Azure Web App Service to work with [IFRC/Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator). 
 This application relies on it to get real-time updates about alerts with the use of Celery Broker whose provided functionality is utilised Redis. 
-This project connects to two Postgre Database: The alert database that stores polled alerts 
-and subscription database that stores subscription-related records. 
+This project connects to two Postgre Database: The alert database that stores polled alerts and subscription database that stores subscription-related records. 
 Whenever a new alert is pooled or removed from CAP aggregator, a new task is initialised in the task queue of Celery Broker, 
 and deliever it to the subscription system. 
 Subsequently, the system matches the alert with existing subscriptions and store the result as many-to-many fields onto subscription database.
-Similary, whenever a new subscription is created, a new task is initialised in the task queue of Celery Broker, 
-match this subscription with existing alerts in alert database, and store the result as many-to-many fields onto subscription database.
+Similary, whenever a new subscription is created, a new task is initialised in the task queue of Celery Broker, match this subscription with existing alerts in alert database, and store the result as many-to-many fields onto subscription database.
 
 Additionally, this back-end project is designed to work with a corresponding front-end application.
-You can find the front-end code at 
-[IFRC/Alert Hub Frontend](https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend).
+You can find the front-end code at [IFRC/Alert Hub Frontend](https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend).
 
 
 
