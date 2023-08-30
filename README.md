@@ -2,25 +2,34 @@
 
 ## Description
 
-This project serves as a back-end application of IFRC Alert Hub designed to work with 
-[IFRC/Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator).
-This application relies on it to get real-time updates about alerts.
+The goal of the IFRC Alert Hub is to ensure that communities around the world receive the most 
+timely and effective emergency alerts possible, so that action can be taken to protect their lives
+and livelihoods. 
+
+The subscription system aims to provide internal logics that enables IFRC volunteers to subscribed to a region, 
+receive timely notifcation of subscribed alerts, and view details of alerts. 
+
+This project is a component of IFRC Alert Hub, and it is designed as a Azure Web App Service to work with [IFRC/Alert Hub CAP Aggregator](https://github.com/IFRC-Alert-Hub/Alert-Hub-CAP-Aggregator). 
+This project connects to two PostgreSQL Database: The alert database that stores polled alerts and subscription database that stores subscription-related records. 
+
+This project relies on it to get real-time updates about alerts with the use of Celery Broker whose provided functionality is utilised Redis. 
+Whenever a new alert is pooled or removed from CAP aggregator, a new task is initialised in the task queue of Celery Broker, 
+and deliever it to the subscription system. 
+Subsequently, the system matches the alert with existing subscriptions and store the result as many-to-many fields onto subscription database.
+Similary, whenever a new subscription is created, a new task is initialised in the task queue of Celery Broker, match this subscription with existing alerts in alert database, and store the result as many-to-many fields onto subscription database.
 
 Additionally, this back-end project is designed to work with a corresponding front-end application.
-You can find the front-end code at 
-[IFRC/Alert Hub Frontend](https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend).
+You can find the front-end code at [IFRC/Alert Hub Frontend](https://github.com/IFRC-Alert-Hub/Alert-Hub-Frontend).
 
-The goal of the IFRC Alert Hub is to ensure that communities around the world receive the most
-timely and effective emergency alerts possible, so that action can be taken to protect their lives
-and livelihoods.
+
 
 ## Features
 
 - A global alert map visualization: Offers a geospatial overview of worldwide emergencies.
 - User subscription: Allows personalized accounts and subscriptions to sub-national regions 
   or disaster severities of interest.
-- Alert notifications or rebroadcasting: Send or rebroadcast real-time alerts to users.
-- Email notifications: Sends real-time updates on emergencies to users based on their subscription.
+- Filters subscribed alerts: Matches subscription criteria with alert details based on admin1s, certainty, severity, and urgency. 
+- Email notifications: Sends scheduled and real-time updates on emergencies to users based on their subscription.
 - Administration service: Fulfills a wide-range of complex use cases involving administrators 
   and staff users.
 
@@ -45,7 +54,7 @@ Before you start, make sure you have:
   You can find the installation guide 
   from [here](https://redis.io/docs/getting-started/installation/).
 
-### Run the Application
+### Run the Application Locally
 
 1. Clone the repository to your local machine, using HTTPS:
 
@@ -110,6 +119,7 @@ celery -A project worker -l info --pool=solo
 celery -A project beat -l info
 ```
 
+
 ## Access the admin page
 
 Django provides us Admin Panel for its users. 
@@ -128,10 +138,10 @@ python manage.py createsuperuser
 2. You can access the admin page 
    from [here](http://127.0.0.1:8000/admin/login/?next=/admin/).
 
-## Access the GraphQL page
+## Access provided interface
 
-In this project, we use GraphQL to access the interfaces provided from the back-end.
-You can access the GraphQL page by getting urls from urls.py
+In this project, we use both GraphQL and restful API to access the interfaces provided from the subscription system.
+You can access the GraphQL page by getting urls from urls.py.
 
 ```
 urlpatterns = [
@@ -155,6 +165,11 @@ urlpatterns = [
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
 ]
 ```
+
+You can also access the interface to view subscribed alerts for a specific subscription:
+http://127.0.0.1:8000/subscription_manager/get_subscription_alerts/{id}/
+
+where id can be replaced by the specific subscription id.
 
 ## Devops Operations
 
@@ -193,6 +208,15 @@ Another option is to directly leverage the backup service embedded in these Clou
 
 Our datasources of boundaries of administrative areas come from 
 [GADM data](https://gadm.org/data.html).
+
+## Post-Downtime Handling:
+If the subscription server has a long downtime, and there are too many celery task in the Redis queue,
+   use the following commands to re-match all subscriptions with existing alerts:
+
+```bash
+celery -A project purge
+python manage.py initdatabase
+```
 
 ## Design Documentation
 
