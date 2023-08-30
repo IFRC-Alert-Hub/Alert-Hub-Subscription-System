@@ -138,7 +138,7 @@ python manage.py createsuperuser
 2. You can access the admin page 
    from [here](http://127.0.0.1:8000/admin/login/?next=/admin/).
 
-## Access Provided Interface
+## Access provided interface
 
 In this project, we use both GraphQL and restful API to access the interfaces provided from the subscription system.
 You can access the GraphQL page by getting urls from urls.py.
